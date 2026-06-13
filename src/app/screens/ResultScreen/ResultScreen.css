@@ -1,0 +1,794 @@
+/* ========================================
+   ブラウザ全体
+======================================== */
+html,
+body {
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ========================================
+   body
+======================================== */
+body {
+  background-color: #111111;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+
+  font-family: sans-serif;
+}
+
+
+/* ========================================
+   React描画領域
+======================================== */
+#root {
+  width: 1280px;
+  height: 720px;
+
+  overflow: hidden;
+}
+
+
+/* ========================================
+   リザルト画面全体
+======================================== */
+.resultBackColor {
+  width: 100%;
+  height: 100%;
+
+  background-color: #1a1a1a;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   リザルト画面本体
+======================================== */
+.resultScreen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  padding: 40px;
+
+  background-color: #2a2a2a;
+
+  border: 3px solid #555555;
+  border-radius: 16px;
+
+  box-sizing: border-box;
+
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+
+  opacity: 1;
+  transition: opacity 250ms ease;
+  overflow: hidden;
+}
+
+.resultScreenFading {
+  opacity: 0;
+}
+
+
+/* ========================================
+   タイトルエリア
+======================================== */
+.resultHeader {
+  margin-bottom: 30px;
+}
+
+
+/* タイトル */
+.rankTitle {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 56px;
+  font-weight: bold;
+
+  letter-spacing: 4px;
+}
+
+
+/* サブタイトル */
+.resultSubTitle {
+  margin-top: 12px;
+
+  color: #bbbbbb;
+
+  font-size: 20px;
+}
+
+
+/* ========================================
+   ランキングエリア
+======================================== */
+.rankingArea {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rankingScreen .rankingArea {
+  transform: translateY(-34px);
+}
+
+.reviewArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+}
+
+.reviewSummary {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.reviewSummary strong {
+  color: #ffcc33;
+}
+
+.reviewBoards {
+  display: flex;
+  justify-content: center;
+  gap: 72px;
+}
+
+.reviewBoard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.reviewBoardTitle {
+  margin: 0;
+  color: #ffffff;
+  font-size: 26px;
+}
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--review-grid-size, 5), var(--review-cell-size, 62px));
+  grid-template-rows: repeat(var(--review-grid-size, 5), var(--review-cell-size, 62px));
+  gap: 5px;
+}
+
+.reviewCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  box-sizing: border-box;
+  font-size: calc(var(--review-cell-size, 62px) * 0.48);
+}
+
+.reviewCellCorrect::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--review-cell-size, 62px) * 0.11);
+  border: 4px solid;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.reviewCellCorrect::after {
+  border-color: #ff0000;
+}
+
+.reviewCellWrong::before,
+.reviewCellWrong::after {
+  content: "";
+  position: absolute;
+  width: calc(var(--review-cell-size, 62px) * 0.7);
+  height: 5px;
+  background-color: #0066ff;
+  border-radius: 3px;
+}
+
+.reviewCellWrong::before {
+  transform: rotate(45deg);
+}
+
+.reviewCellWrong::after {
+  transform: rotate(-45deg);
+}
+
+.reviewLegend {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  color: #ffffff;
+  font-size: 17px;
+}
+
+.reviewLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reviewLegendMark {
+  width: 20px;
+  height: 20px;
+  border: 4px solid;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.reviewLegendGreen {
+  border-color: #ff0000;
+}
+
+.reviewLegendCross {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.reviewLegendCross::before,
+.reviewLegendCross::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 20px;
+  height: 4px;
+  background-color: #0066ff;
+  border-radius: 2px;
+}
+
+.reviewLegendCross::before {
+  transform: rotate(45deg);
+}
+
+.reviewLegendCross::after {
+  transform: rotate(-45deg);
+}
+
+
+/* リスト全体 */
+.rankList {
+  width: 100%;
+
+  list-style: none;
+
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+
+/* ========================================
+   順位行
+======================================== */
+.rankItem {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+
+  min-height: 90px;
+
+  padding: 0 24px;
+
+  background-color: #3a3a3a;
+
+  border: 2px solid #555555;
+  border-radius: 12px;
+
+  box-sizing: border-box;
+}
+
+.rankItem > * {
+  position: relative;
+  z-index: 2;
+}
+
+.rankItemFirst::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    110deg,
+    rgba(255, 92, 92, 0.72),
+    rgba(255, 211, 78, 0.72),
+    rgba(119, 231, 117, 0.72),
+    rgba(86, 211, 255, 0.72),
+    rgba(164, 121, 255, 0.72),
+    rgba(255, 118, 215, 0.72),
+    rgba(255, 92, 92, 0.72)
+  );
+  background-size: 260% 100%;
+  animation: firstRankRainbowFlow 2.4s linear infinite;
+}
+
+@keyframes firstRankRainbowFlow {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 260% 50%;
+  }
+}
+
+.rankItemWaiting {
+  opacity: 0;
+  transform: translateY(180px);
+}
+
+.animatedRankItem {
+  animation: rankItemRise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes rankItemRise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ========================================
+   左側：順位
+======================================== */
+.rankLeft {
+  position: relative;
+  width: 180px;
+
+  text-align: left;
+
+  display: flex;
+  align-items: center;
+}
+
+
+/* 順位 */
+.rankNo {
+  position: relative;
+  z-index: 2;
+  color: #000000;
+
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.rankDecoration {
+  position: absolute;
+  z-index: 1;
+  left: 44px;
+  top: 50%;
+  display: block;
+  line-height: 1;
+  font-family:
+    "Arial Rounded MT Bold",
+    "Hiragino Maru Gothic ProN",
+    "Yu Gothic",
+    sans-serif;
+  -webkit-text-stroke: 3px rgba(255, 255, 255, 0.75);
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+  animation: rankDecorationSpin 2.8s linear infinite;
+}
+
+.rankStar {
+  color: #ffe58a;
+  font-size: 104px;
+}
+
+.rankTriangle {
+  color: #9de8f2;
+  font-size: 96px;
+}
+
+@keyframes rankDecorationSpin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+
+/* ========================================
+   中央：プレイヤー
+======================================== */
+.rankCenter {
+  flex: 1;
+
+  text-align: center;
+}
+
+
+/* プレイヤー名 */
+.rankPlayer {
+  color: #ffffff;
+
+  font-size: 32px;
+  font-weight: bold;
+}
+
+
+/* ========================================
+   右側：スコア
+======================================== */
+.rankRight {
+  width: 260px;
+
+  text-align: right;
+}
+
+
+/* スコア */
+.rankScore {
+  color: #dddddd;
+
+  font-size: 26px;
+}
+
+
+/* ========================================
+   フッター
+======================================== */
+.resultFooter {
+  margin-top: 20px;
+}
+
+
+/* ========================================
+   戻るボタン
+======================================== */
+.backButton {
+  width: 320px;
+  height: 64px;
+
+  font-size: 24px;
+  font-weight: bold;
+
+  color: #ffffff;
+
+  background-color: #444444;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+
+
+/* ホバー時 */
+.backButton:hover {
+  background-color: #555555;
+}
+
+
+/* 押下時 */
+.backButton:active {
+  background-color: #333333;
+}
+
+.rankingBackButton {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition:
+    opacity 650ms ease,
+    transform 650ms ease;
+}
+
+.rankingBackButtonVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  animation: rankingBackButtonFadeIn 650ms ease both;
+}
+
+@keyframes rankingBackButtonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nextReviewButton {
+  width: 320px;
+  height: 64px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #3f5f8a;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.nextReviewButton:hover {
+  background-color: #4b709f;
+}
+
+.nextReviewButton:active {
+  background-color: #314d72;
+}
+
+.nextReviewButton:disabled {
+  cursor: default;
+}
+
+.skipReviewButton {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  z-index: 4;
+  min-width: 132px;
+  height: 46px;
+  padding: 0 18px;
+  color: #ffffff;
+  background-color: #3f5f8a;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 0 rgba(49, 77, 114, 0.5);
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.skipReviewButton:hover {
+  background-color: #4b709f;
+}
+
+.skipReviewButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(49, 77, 114, 0.5);
+}
+
+.skipReviewButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* ========================================
+   順位画面
+======================================== */
+.rankingBackground {
+  background-color: #ffd84d;
+}
+
+.rankingScreen {
+  background-color: #ffd84d;
+  border-color: #e2ad20;
+}
+
+.rankingHeader,
+.rankingArea,
+.rankingScreen .resultFooter {
+  position: relative;
+  z-index: 2;
+}
+
+.rankingScreen .resultFooter {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  z-index: 4;
+  margin-top: 0;
+  transform: translateX(-50%);
+}
+
+.rankingScreen .rankTitle {
+  color: #6b4300;
+  font-size: 72px;
+}
+
+.rankingScreen .resultSubTitle {
+  color: #795300;
+}
+
+.rankingScreen .rankItem {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: #e2ad20;
+}
+
+.rankingScreen .rankPlayer {
+  color: #5d4000;
+}
+
+.rankingScreen .rankItemFirst .rankPlayer {
+  color: #111111;
+  -webkit-text-fill-color: #111111;
+  -webkit-text-stroke: 3px #1f1200;
+  paint-order: stroke fill;
+  font-size: 38px;
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 10px rgba(255, 231, 95, 0.95);
+  animation: firstRankNameGlow 1.35s ease-in-out infinite alternate;
+}
+
+@keyframes firstRankNameGlow {
+  from {
+    filter:
+      brightness(1)
+      drop-shadow(0 0 8px rgba(255, 230, 90, 0.8))
+      drop-shadow(0 0 14px rgba(255, 170, 20, 0.55));
+    transform: scale(1);
+  }
+
+  to {
+    filter:
+      brightness(1.2)
+      drop-shadow(0 0 12px rgba(255, 245, 150, 0.95))
+      drop-shadow(0 0 24px rgba(255, 185, 25, 0.85))
+      drop-shadow(0 0 38px rgba(255, 120, 0, 0.58));
+    transform: scale(1.08);
+  }
+}
+
+.rankingScreen .rankScore {
+  color: #795300;
+}
+
+.confettiLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confettiPiece {
+  position: absolute;
+  top: -24px;
+  width: 11px;
+  height: 20px;
+  opacity: 0;
+  border-radius: 3px;
+  animation: confettiFall 3.2s linear infinite;
+}
+
+.confettiColor0 {
+  background-color: #ff4d4d;
+}
+
+.confettiColor1 {
+  background-color: #0066ff;
+}
+
+.confettiColor2 {
+  background-color: #00a85a;
+}
+
+.confettiColor3 {
+  background-color: #ff8c00;
+}
+
+.confettiColor4 {
+  background-color: #9b59b6;
+}
+
+.confettiColor5 {
+  background-color: #ff4fa3;
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 0;
+    transform: translate(0, -30px) rotate(0deg);
+  }
+
+  8% {
+    opacity: 0.58;
+  }
+
+  70% {
+    opacity: 0.48;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--confetti-drift), 780px) rotate(var(--confetti-rotation));
+  }
+}
+
+/* ========================================
+   回答確認画面
+======================================== */
+.answerCheckBackground {
+  background-color: #ffd84d;
+}
+
+.answerCheckScreen {
+  padding: 20px 40px;
+  background-color: #ffd84d;
+  border-color: #e2ad20;
+}
+
+.answerCheckHeader {
+  margin-bottom: 10px;
+}
+
+.answerCheckTitle {
+  color: #6b4300;
+  font-size: 44px;
+}
+
+.answerCheckScreen .resultSubTitle {
+  margin-top: 6px;
+  color: #795300;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.compactReviewArea {
+  gap: 10px;
+}
+
+.compactReviewBoards {
+  gap: 72px;
+}
+
+.answerCheckScreen .reviewSummary {
+  color: #5d4000;
+}
+
+.answerCheckScreen .reviewSummary strong {
+  color: #b54b00;
+}
+
+.answerCheckScreen .reviewLegend {
+  color: #5d4000;
+}
+
+.answerCheckScreen .reviewBoard {
+  gap: 6px;
+}
+
+.answerCheckScreen .reviewBoardTitle {
+  color: #5d4000;
+  font-size: 24px;
+}
+
+.answerCheckScreen .reviewGrid {
+  grid-template-columns: repeat(var(--review-grid-size, 5), var(--review-cell-size, 62px));
+  grid-template-rows: repeat(var(--review-grid-size, 5), var(--review-cell-size, 62px));
+}
+
+.answerCheckFooter {
+  margin-top: 10px;
+}

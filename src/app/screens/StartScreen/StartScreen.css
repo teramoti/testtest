@@ -1,0 +1,796 @@
+/* =========================
+   画面全体
+========================= */
+.backColor {
+  width: 1280px;
+  height: 720px;
+
+  margin: 0 auto;
+
+  background-color: #1e1e1e;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-family: sans-serif;
+}
+
+
+/* =========================
+   スタート画面本体
+========================= */
+.startScreen {
+  width: 700px;
+
+  padding: 40px;
+
+  background-color: #2b2b2b;
+
+  border: 3px solid #555;
+  border-radius: 16px;
+
+  box-sizing: border-box;
+
+  text-align: center;
+}
+
+
+/* =========================
+   タイトルエリア
+========================= */
+.titleArea {
+  margin-bottom: 50px;
+}
+
+/* メインタイトル */
+.gameTitle {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 56px;
+  font-weight: bold;
+
+  letter-spacing: 4px;
+}
+
+/* サブタイトル */
+.subTitle {
+  margin-top: 12px;
+
+  color: #bbbbbb;
+
+  font-size: 18px;
+}
+
+
+/* =========================
+   メニューエリア
+========================= */
+.menuArea {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+
+/* =========================
+   プレイヤー人数設定
+========================= */
+.playerSetting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.playerCountRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+/* ラベル */
+.label {
+  margin-bottom: 12px;
+
+  color: #dddddd;
+
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* 人数表示 */
+.playerCount {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 32px;
+}
+
+.difficultySetting {
+  display: flex;
+  justify-content: center;
+}
+
+.difficultyRichRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.difficultyOpenButton {
+  min-width: 180px;
+  height: 58px;
+  padding: 0 26px;
+  color: #ffffff;
+  background-color: #55b95a;
+  border: none;
+  border-radius: 999px;
+  box-shadow:
+    0 6px 0 #2f7f35,
+    0 12px 18px rgba(47, 127, 53, 0.22);
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.difficultyOpenButton:hover {
+  background-color: #61ca66;
+}
+
+.difficultyOpenButton:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #2f7f35,
+    0 8px 14px rgba(47, 127, 53, 0.22);
+}
+
+.difficultyCurrent {
+  min-width: 180px;
+  padding: 13px 24px;
+  color: #1f4d23;
+  background-color: #f4ffe0;
+  border: 3px solid #8bc34a;
+  border-radius: 18px;
+  box-shadow: 0 5px 0 rgba(90, 145, 32, 0.18);
+  box-sizing: border-box;
+  font-size: 26px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.difficultyDialogLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(82, 56, 0, 0.22);
+  border-radius: 18px;
+}
+
+.difficultyDialog {
+  width: 520px;
+  padding: 30px 34px;
+  background-color: #fff3b0;
+  border: 4px solid #8bc34a;
+  border-radius: 24px;
+  box-shadow:
+    0 10px 0 rgba(90, 145, 32, 0.28),
+    0 20px 36px rgba(73, 49, 0, 0.28);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.difficultyDialogTitle {
+  margin: 0 0 24px;
+  color: #1f4d23;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.difficultyDialogButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.difficultyChoiceButton,
+.difficultyDialogClose {
+  height: 58px;
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.difficultyChoiceButton {
+  background-color: #55b95a;
+  box-shadow: 0 5px 0 #2f7f35;
+}
+
+.difficultyChoiceButton:hover,
+.difficultyChoiceSelected {
+  background-color: #72cf54;
+}
+
+.difficultyChoiceSelected {
+  color: #173d1a;
+  outline: 4px solid #fff17a;
+}
+
+.difficultyDialogClose {
+  width: 180px;
+  height: 50px;
+  margin-top: 24px;
+  background-color: #3f5f8a;
+  box-shadow: 0 5px 0 rgba(49, 77, 114, 0.55);
+  font-size: 20px;
+}
+
+
+/* =========================
+   入力欄
+========================= */
+.numberInput {
+  width: 140px;
+
+  padding: 10px;
+
+  font-size: 24px;
+  text-align: center;
+
+  color: #ffffff;
+
+  background-color: #444444;
+
+  border: 2px solid #666666;
+  border-radius: 8px;
+
+  outline: none;
+
+  box-sizing: border-box;
+}
+
+/* フォーカス時 */
+.numberInput:focus {
+  border-color: #999999;
+}
+
+
+/* =========================
+   ボタンエリア
+========================= */
+.buttonArea {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+
+/* スタートボタン */
+.startButton {
+  width: 320px;
+
+  padding: 16px 0;
+
+  font-size: 28px;
+  font-weight: bold;
+
+  color: #ffffff;
+
+  background-color: #cc3333;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+
+/* ホバー時 */
+.startButton:hover {
+  background-color: #e04545;
+}
+
+/* 押した時 */
+.startButton:active {
+  background-color: #a82828;
+}
+
+.howToButton {
+  width: 320px;
+  padding: 12px 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #3f5f8a;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.howToButton:hover {
+  background-color: #4b709f;
+}
+
+.howToButton:active {
+  background-color: #314d72;
+}
+
+.howToOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.howToModal {
+  width: min(760px, 92vw);
+  min-height: 280px;
+  background-color: #2b2b2b;
+  border: 2px solid #666;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.howToTitle {
+  margin: 0;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.howToBody {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.6;
+  color: #e6e6e6;
+}
+
+.howToActions {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.howToNav {
+  min-width: 96px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #555;
+  color: #fff;
+  cursor: pointer;
+}
+
+.howToNav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.howToPage {
+  min-width: 68px;
+  text-align: center;
+  font-size: 16px;
+  color: #d8d8d8;
+}
+
+.howToClose {
+  align-self: center;
+  min-width: 140px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #cc3333;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* =========================
+   Rich start screen additions
+========================= */
+.startScreenYellowBackground {
+  position: relative;
+  background-color: #071f29;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.richStartPanel {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 980px;
+  padding: 24px 34px 28px;
+  background-color: rgba(7, 31, 41, 0.78);
+  border: 2px solid rgba(143, 229, 235, 0.72);
+  border-radius: 14px;
+  box-shadow:
+    0 12px 0 rgba(2, 13, 20, 0.28),
+    0 18px 32px rgba(2, 13, 20, 0.42);
+  transform: translateX(-50%);
+}
+
+.richStartPanel .subTitle,
+.richStartPanel .label,
+.richStartPanel .playerCount {
+  color: #fef5c2;
+}
+
+.richStartPanel .numberInput {
+  color: #fef5c2;
+  background-color: rgba(2, 13, 20, 0.62);
+  border-color: #6fd4df;
+}
+
+.richStartPanel .numberInput:focus {
+  border-color: #fef5c2;
+}
+
+.richStartPanel .menuArea {
+  gap: 14px;
+}
+
+.richStartPanel .label {
+  margin-bottom: 6px;
+  font-size: 20px;
+}
+
+.richStartPanel .playerCount {
+  font-size: 28px;
+}
+
+.richStartPanel .difficultyOpenButton,
+.richStartPanel .difficultyCurrent {
+  min-width: 160px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+.richStartPanel .difficultyOpenButton {
+  background-color: #3f8a8f;
+  box-shadow: 0 5px 0 rgba(2, 13, 20, 0.32);
+}
+
+.richStartPanel .difficultyOpenButton:hover {
+  background-color: #4fa1a8;
+}
+
+.richStartPanel .difficultyCurrent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fef5c2;
+  background-color: rgba(2, 13, 20, 0.62);
+  border: 2px solid #6fd4df;
+  box-shadow: 0 5px 0 rgba(2, 13, 20, 0.28);
+}
+
+.richStartPanel .buttonArea {
+  margin-top: 0;
+  gap: 10px;
+}
+
+.richStartPanel .startButton,
+.richStartPanel .howToButton {
+  width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 5px 0 rgba(2, 13, 20, 0.34);
+}
+
+.richStartPanel .startButton {
+  padding: 13px 0;
+  font-size: 24px;
+  background-color: #d85b42;
+}
+
+.richStartPanel .startButton:hover {
+  background-color: #ee6b4e;
+}
+
+.richStartPanel .howToButton {
+  padding: 11px 0;
+  font-size: 19px;
+  background-color: #3f5f8a;
+}
+
+.richTitleArea {
+  margin-bottom: 18px;
+}
+
+.richTitleRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+}
+
+.startPatternDisplay {
+  width: 560px;
+  margin: 14px auto 0;
+  padding: 10px 20px;
+  color: #fef5c2;
+  background-color: rgba(13, 66, 84, 0.92);
+  border: 2px solid #6fd4df;
+  border-radius: 10px;
+  box-shadow:
+    0 5px 0 rgba(2, 13, 20, 0.28),
+    0 12px 18px rgba(2, 13, 20, 0.28);
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+}
+
+.startPatternLabel {
+  color: #8fe5eb;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.startPatternValue {
+  color: #fef5c2;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.titleLogoImage {
+  display: block;
+  width: min(560px, 76vw);
+  height: auto;
+  filter: drop-shadow(0 12px 0 rgba(2, 13, 20, 0.22)) drop-shadow(0 18px 28px rgba(2, 13, 20, 0.5));
+}
+
+.richGameTitle {
+  color: #000000;
+  font-family:
+    "Hiragino Maru Gothic ProN",
+    "Hiragino Maru Gothic Pro",
+    "Yu Gothic",
+    "Meiryo",
+    sans-serif;
+  font-size: 68px;
+  font-weight: 900;
+  letter-spacing: 5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-shadow:
+    0 4px 0 #f2b632,
+    0 7px 0 rgba(0, 0, 0, 0.18);
+}
+
+.titleDecoration {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.titleDecorationLeft {
+  animation: titleDecorationSpin 4.5s linear infinite;
+}
+
+.titleDecorationRight {
+  animation: titleDecorationSpinReverse 4.5s linear infinite;
+}
+
+.titleStar,
+.titleTriangle {
+  display: inline-block;
+  line-height: 1;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.18));
+}
+
+.titleStar {
+  color: #ff7b54;
+  font-size: 40px;
+}
+
+.titleTriangle {
+  color: #69c7d6;
+  font-size: 30px;
+}
+
+@keyframes titleDecorationSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes titleDecorationSpinReverse {
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titleDecorationLeft,
+  .titleDecorationRight {
+    animation: none;
+  }
+}
+
+/* =========================
+   How-to game preview
+========================= */
+.howToModal:has(.howToGamePreview) {
+  width: min(980px, 94vw);
+  background-color: #fff3b0;
+  border-color: #e2ad20;
+  color: #000000;
+}
+
+.howToModal:has(.howToGamePreview) .howToBody {
+  color: #000000;
+}
+
+.howToModal:has(.howToGamePreview) .howToPage {
+  color: #5d4000;
+}
+
+.howToGamePreview {
+  width: 720px;
+  margin: 0 auto;
+  padding: 14px 18px 18px;
+  background-color: #ffffff;
+  border: 2px solid #222222;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.howToPreviewPattern {
+  margin: 0 0 10px;
+  color: #000000;
+  font-size: 14px;
+  text-align: center;
+}
+
+.howToPreviewBoards {
+  display: flex;
+  justify-content: center;
+  gap: 58px;
+}
+
+.howToPreviewBoardGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.howToPreviewBoardLabel {
+  color: #000000;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.howToPreviewBoard {
+  display: grid;
+  grid-template-columns: repeat(5, 46px);
+  grid-template-rows: repeat(5, 46px);
+  gap: 4px;
+}
+
+.howToPreviewRotatedBoard {
+  position: relative;
+}
+
+.howToRotationArrow {
+  position: absolute;
+  z-index: 3;
+  top: -22px;
+  left: -28px;
+  width: 130px;
+  height: auto;
+  opacity: 0.82;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+  pointer-events: none;
+}
+
+.howToPreviewCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  background-color: #ffffff;
+  border: 2px solid #000000;
+  box-sizing: border-box;
+  font-size: 24px;
+}
+
+.howToPreviewSelected::after,
+.howToPreviewCorrect::after,
+.howToPreviewReferenceCorrect::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 3px solid;
+  border-radius: 50%;
+}
+
+.howToPreviewSelected::after {
+  border-color: #0000ff;
+}
+
+.howToPreviewCorrect::after {
+  border-color: #008000;
+}
+
+.howToPreviewReferenceCorrect::after {
+  border-color: #ff0000;
+}
+
+.howToPreviewWrong::before,
+.howToPreviewWrong::after {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 4px;
+  background-color: #ff0000;
+  border-radius: 2px;
+}
+
+.howToPreviewWrong::before {
+  transform: rotate(45deg);
+}
+
+.howToPreviewWrong::after {
+  transform: rotate(-45deg);
+}
+
+.jumpTitle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jumpTitleChar {
+  display: inline-block;
+  animation: titleJump 2s ease-in-out infinite;
+}
+
+@keyframes titleJump {
+  0%,
+  45% {
+    transform: translateY(0);
+  }
+
+  15% {
+    transform: translateY(-25px);
+  }
+
+  30% {
+    transform: translateY(0);
+  }
+}

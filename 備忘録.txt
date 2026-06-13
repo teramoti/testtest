@@ -1,0 +1,76 @@
+統合プロジェクトチームへの連携用備忘録
+
+
+----------------------------------------
+Vite + React + TypeScript + Phaser 4
+のビルド結果 (dist)を結合側で動かす場合
+
+LiveSeverのiframe経由であればCORSエラーのブラウザ認証によるエラーは発生しないため、
+ ファイル指定の仕方としては前回の下記iframeの実装で問題なし
+ 「
+         <iframe
+            id="gameFrame"
+            src="games/${name}/index.html"
+ 」
+ ただし ${name}に入る文字列が「プロジェクト名/dist」にしてもらう必要あり
+
+
+-----------------------------------------
+基本形（親 → iframeへ送信）
+① HTML
+<iframe id="gameFrame" src="http://localhost:5173"></iframe>
+② JavaScript（送信）
+const iframe = document.getElementById('gameFrame')
+iframe.addEventListener("load", () => {iframe.focus()});
+
+上記のaddEventlisnerのloadタイミングだと、ゲーム側のロードが間に合わないので、
+
+そのあとのイベントとして以下を追加
+window.addEventListener("message", (event) => {
+    if (event.data.type === "READY") {
+    iframe.contentWindow.postMessage(
+      {
+        type: "SET_PLAYER_COUNT",
+        playerCount: 2
+      },
+      "*"
+    );
+  }
+});
+
+※typeとかは統合チームに合わせるので一旦暫定の内容としてみてもらえれば
+内容としては、iframeで呼び出された側の子画面の方でpostmessageの受信可能になる準備が完了したタイミングで
+READYのPOSTMESSAGEを子画面から送信します。
+そのあとに、イベントとして親画面からププレイヤー人数を送信してもらえれば、ロード早すぎて人数反映されないみたいな問題は避けられる見込みです。
+
+-----------------------------------------------
+■子から親に戻すResultScreenの時
+こちらは親側で message イベントを監視するだけ
+
+✔ 全体イメージ
+iframe（子） → postMessage → 親
+✔ 子側
+window.parent.postMessage(
+  {
+    type: 'GAME_RESULT',
+    value: [1, 2, 4, 3]
+  },
+  '*'
+)
+✔ 親側の受信コード（これが本体）
+<script>
+window.addEventListener('message', (event) => {
+  // 安全対策（これは不要）
+  // if (event.origin !== 'http://localhost:5173') return
+
+  const data = event.data
+
+  if (data.type === 'GAME_RESULT') {
+    console.log('順位結果:', data.value)
+
+    // 例：画面に表示
+    document.getElementById('result').innerText =
+      JSON.stringify(data.value)
+  }
+})
+</script>

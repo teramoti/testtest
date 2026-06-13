@@ -1,0 +1,210 @@
+/* ========================================
+   ゲーム画面専用の外枠
+======================================== */
+.gameScreenShell {
+  width: 1280px;
+  height: 720px;
+  margin: 0 auto;
+  background-color: #ffd84d;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.55) 0 5px, transparent 6px),
+    radial-gradient(circle at 88% 24%, rgba(255, 255, 255, 0.45) 0 7px, transparent 8px),
+    radial-gradient(circle at 20% 82%, rgba(255, 255, 255, 0.4) 0 4px, transparent 5px),
+    radial-gradient(circle at 80% 76%, rgba(255, 255, 255, 0.5) 0 6px, transparent 7px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.gameScreenPanel {
+  position: relative;
+  width: 1240px;
+  height: 680px;
+  padding: 10px;
+  background-color: #fff3b0;
+  border: 4px solid #e2ad20;
+  border-radius: 18px;
+  box-shadow:
+    0 12px 0 rgba(143, 91, 0, 0.2),
+    0 18px 32px rgba(100, 62, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.gameCanvasHost {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 3px solid #5d4000;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.58);
+  box-sizing: border-box;
+}
+
+.gameHtmlHud {
+  position: absolute;
+  top: 154px;
+  right: 76px;
+  z-index: 5;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  font-family:
+    "Hiragino Maru Gothic ProN",
+    "Yu Gothic",
+    "Meiryo",
+    sans-serif;
+}
+
+.gameHtmlHud .gameHudCard {
+  pointer-events: none;
+}
+
+.gameHudCard {
+  width: 150px;
+  padding: 10px 12px;
+  color: #000000;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid #e2ad20;
+  border-radius: 12px;
+  box-shadow: 0 5px 0 rgba(143, 91, 0, 0.18);
+  box-sizing: border-box;
+}
+
+.gameRuleCard {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  z-index: 5;
+  min-width: 440px;
+  padding: 10px 22px;
+  color: #000000;
+  background-color: rgba(210, 245, 118, 0.96);
+  border: 2px solid #8bc34a;
+  border-radius: 14px;
+  box-shadow: 0 5px 0 rgba(90, 145, 32, 0.22);
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  font-family:
+    "Hiragino Maru Gothic ProN",
+    "Yu Gothic",
+    "Meiryo",
+    sans-serif;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.gameRuleLabel {
+  color: #5d4000;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.gameRuleName {
+  color: #000000;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.gameHudLabel {
+  margin: 0 0 4px;
+  color: #5d4000;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.gameHudMain,
+.gameHudScore,
+.gameHudTimer {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.gameHudTimer {
+  color: #cc3333;
+  font-size: 34px;
+}
+
+.gameHudCard:has(.gameHudTimer) {
+  width: 170px;
+  padding: 12px 14px;
+}
+
+.gameHudButton {
+  position: fixed;
+  left: 50%;
+  bottom: calc((100vh - 720px) / 2 + 58px);
+  z-index: 10;
+  width: 320px;
+  padding: 16px 0;
+  color: #ffffff;
+  background-color: #3f5f8a;
+  border: none;
+  border-radius: 10px;
+  font-family:
+    "Hiragino Maru Gothic ProN",
+    "Yu Gothic",
+    "Meiryo",
+    sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(49, 77, 114, 0.55);
+  transform: translateX(-50%);
+}
+
+.gameHudNextButton:hover {
+  background-color: #4b709f;
+}
+
+.gameHudNextButton {
+  left: calc(50% + 360px);
+}
+
+.gameHudButton:active {
+  transform: translate(-50%, 2px);
+  box-shadow: 0 3px 0 rgba(49, 77, 114, 0.55);
+}
+
+.gameHudNextButton:active {
+  transform: translate(-50%, 2px);
+}
+
+.gameHudAnswerButton {
+  background-color: #cc3333;
+  box-shadow: 0 5px 0 rgba(168, 40, 40, 0.55);
+}
+
+.gameHudAnswerButton:hover {
+  background-color: #e04545;
+}
+
+.gameHudScoreList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gameHudScoreList li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+}
+
+.gameCanvasHost canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
