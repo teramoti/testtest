@@ -14,6 +14,8 @@ export type GameSettings = {
 export type PlayerResult = {
   player: number
   score: number
+  missCount?: number
+  travelCount?: number
 }
 
 export type GameResult = {
@@ -24,6 +26,9 @@ type RawResultEntry = {
   player?: number
   playerNumber?: number
   score: number
+  missCount?: number
+  crashCount?: number
+  travelCount?: number
 }
 
 type RawGameResult = GameResult | {
@@ -49,6 +54,12 @@ function getScores(result: RawGameResult): number[] | null {
 function sortResults(results: PlayerResult[]): PlayerResult[] {
   return [...results].sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score
+    if ((a.missCount ?? 0) !== (b.missCount ?? 0)) {
+      return (a.missCount ?? 0) - (b.missCount ?? 0)
+    }
+    if ((b.travelCount ?? 0) !== (a.travelCount ?? 0)) {
+      return (b.travelCount ?? 0) - (a.travelCount ?? 0)
+    }
     return a.player - b.player
   })
 }
@@ -71,6 +82,8 @@ export default function App() {
         results: sortResults(resultEntries.map((entry, index) => ({
           player: entry.player ?? entry.playerNumber ?? index + 1,
           score: entry.score,
+          missCount: entry.missCount ?? entry.crashCount ?? 0,
+          travelCount: entry.travelCount ?? 0,
         }))),
       })
       setScreen('result')

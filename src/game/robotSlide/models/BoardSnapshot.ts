@@ -16,6 +16,7 @@ export interface BoardSnapshot {
     robotDirection: Direction
     robotAlive: boolean
     jewelTileIds: number[]
+    jewelValues: Record<number, number>
     nextStepSafe: boolean
     routePreview: RoutePreview
     difficultyLabel: string

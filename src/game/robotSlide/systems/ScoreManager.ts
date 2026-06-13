@@ -126,9 +126,7 @@ export class ScoreManager {
             this.connectionChain = 0
         }
 
-        const award = GameConfig.ROBOT_STEP_SCORE + (triggeredCurrent ? GameConfig.ROBOT_STEP_SCORE : 0)
-        this.score += award
-        this.setLastEvent(triggeredCurrent ? 'CURRENT STEP' : 'STEP', award)
+        this.setLastEvent(triggeredCurrent ? 'CURRENT STEP' : 'STEP', 0)
 
         this.notifyScoreUpdated()
         return this.getSnapshot()
@@ -136,8 +134,9 @@ export class ScoreManager {
 
     /**
      * registerJewelCollect: 螳晉浹蝗槫庶譎ゅ・蠕礼せ縺ｨ繧ｳ繝ｳ繝懃憾諷九ｒ譖ｴ譁ｰ縺吶ｋ縲・     * - 繧ｳ繝ｳ繝懊ｄ蛟咲紫繧定ｨ育ｮ励＠縲√せ繧ｳ繧｢縺ｸ蜿肴丐縺吶ｋ縲・     */
-    registerJewelCollect(_routePreview: RoutePreview): ScoreSnapshot {
+    registerJewelCollect(_routePreview: RoutePreview, jewelValue: number = 1): ScoreSnapshot {
         void _routePreview
+        const award = Math.max(1, Math.trunc(jewelValue))
         this.jewelCount += 1
         this.jewelsSinceCrash += 1
         this.comboCount = this.jewelCount
@@ -145,8 +144,8 @@ export class ScoreManager {
         this.comboRemainingMs = 0
         this.efficientCollectTotal += Math.max(0, 100 - this.slidesSinceLastJewel)
         this.slidesSinceLastJewel = 0
-        this.score += GameConfig.JEWEL_SCORE
-        this.setLastEvent('JEWEL', GameConfig.JEWEL_SCORE, `${this.jewelCount} COLLECTED`)
+        this.score += award
+        this.setLastEvent('JEWEL', award, `${this.jewelCount} COLLECTED`)
         this.notifyScoreUpdated()
         this.notifyComboChanged()
         return this.getSnapshot()

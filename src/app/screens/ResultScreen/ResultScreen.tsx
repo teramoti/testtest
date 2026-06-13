@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './ResultScreen.css'
-import { getRanksFromScores } from '../../../utils/Result.js'
 import type { GameResult } from '../../App'
 import resultBgm from '../../../../assets/bkue_ghost/audio/result.mp3'
 import { playClickSound } from '../../audio/playClickSound'
@@ -8,6 +7,23 @@ import { playClickSound } from '../../audio/playClickSound'
 type Props = {
   result: GameResult
   onBack: () => void
+}
+
+function compareResult(a: GameResult['results'][number], b: GameResult['results'][number]) {
+  if (b.score !== a.score) return b.score - a.score
+  if ((a.missCount ?? 0) !== (b.missCount ?? 0)) {
+    return (a.missCount ?? 0) - (b.missCount ?? 0)
+  }
+  if ((b.travelCount ?? 0) !== (a.travelCount ?? 0)) {
+    return (b.travelCount ?? 0) - (a.travelCount ?? 0)
+  }
+  return a.player - b.player
+}
+
+function isSameRank(a: GameResult['results'][number], b: GameResult['results'][number]) {
+  return a.score === b.score
+    && (a.missCount ?? 0) === (b.missCount ?? 0)
+    && (a.travelCount ?? 0) === (b.travelCount ?? 0)
 }
 
 export default function ResultScreen({ result, onBack }: Props) {
@@ -19,15 +35,12 @@ export default function ResultScreen({ result, onBack }: Props) {
   const backButtonTimerRef = useRef<number | null>(null)
   const resultBgmRef = useRef<HTMLAudioElement | null>(null)
   const rankedResults = useMemo(
-    () => [...result.results].sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score
-      return a.player - b.player
-    }),
+    () => [...result.results].sort(compareResult),
     [result.results]
   )
   const displayedRanks = useMemo(() => {
     return rankedResults.map((entry) =>
-      rankedResults.findIndex((candidate) => candidate.score === entry.score) + 1
+      rankedResults.findIndex((candidate) => isSameRank(candidate, entry)) + 1
     )
   }, [rankedResults])
 
@@ -92,10 +105,10 @@ export default function ResultScreen({ result, onBack }: Props) {
   const handleBack = () => {
     playClickSound()
 
-    const scoresByPlayer = [...result.results]
-      .sort((a, b) => a.player - b.player)
-      .map((entry) => entry.score)
-    const rank = getRanksFromScores(scoresByPlayer)
+    const resultsByPlayer = [...result.results].sort((a, b) => a.player - b.player)
+    const rank = resultsByPlayer.map((entry) =>
+      displayedRanks[rankedResults.findIndex((candidate) => candidate.player === entry.player)]
+    )
 
     window.parent.postMessage(
       {

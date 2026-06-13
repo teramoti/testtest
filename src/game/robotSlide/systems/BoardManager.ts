@@ -58,6 +58,7 @@ export class BoardManager {
     robotDirection: DirectionValue
     robotAlive: boolean
     jewelTileIds: Set<number>
+    jewelValues: Map<number, number>
     currentDifficulty: DifficultyProfile
 
     constructor(boardSize: number = GameConfig.BOARD_SIZE) {
@@ -70,6 +71,7 @@ export class BoardManager {
         this.robotDirection = Direction.Right
         this.robotAlive = true
         this.jewelTileIds = new Set()
+        this.jewelValues = new Map()
         this.currentDifficulty = this.selectDifficulty(0)
         this.resetBoard()
     }
@@ -156,6 +158,7 @@ export class BoardManager {
             robotDirection: this.robotDirection,
             robotAlive: this.robotAlive,
             jewelTileIds: [...this.jewelTileIds],
+            jewelValues: Object.fromEntries(this.jewelValues),
             nextStepSafe: routePreview.safeStepCount > 0,
             routePreview,
             difficultyLabel: this.currentDifficulty.label,
@@ -290,6 +293,7 @@ export class BoardManager {
                 direction: this.robotDirection,
                 alive: false,
                 collectedJewel: false,
+                collectedJewelValue: 0,
                 triggeredCurrent: false,
                 loopDetected: false,
                 blockedPosition: null,
@@ -306,6 +310,7 @@ export class BoardManager {
                 direction: this.robotDirection,
                 alive: true,
                 collectedJewel: false,
+                collectedJewelValue: 0,
                 triggeredCurrent: false,
                 loopDetected: false,
                 blockedPosition: simulation.blockedPosition,
@@ -316,7 +321,7 @@ export class BoardManager {
         this.robotDirection = simulation.direction
         const currentTile = this.getTileAtPosition(this.robotPosition)
         const triggeredCurrent = currentTile?.feature === 'current'
-        const collectedJewel = this.collectJewelAtPosition(this.robotPosition)
+        const collectedJewelValue = this.collectJewelAtPosition(this.robotPosition)
         const routePreview = this.buildRoutePreview(this.robotPosition, this.robotDirection)
 
         return {
@@ -325,7 +330,8 @@ export class BoardManager {
             to: this.clonePosition(this.robotPosition),
             direction: this.robotDirection,
             alive: true,
-            collectedJewel,
+            collectedJewel: collectedJewelValue > 0,
+            collectedJewelValue,
             triggeredCurrent,
             loopDetected: routePreview.loopDetected,
             blockedPosition: routePreview.blockedPosition,
@@ -624,6 +630,7 @@ export class BoardManager {
 
     resetJewels(): void {
         this.jewelTileIds.clear()
+        this.jewelValues.clear()
         this.fillInitialJewels()
     }
 
@@ -635,7 +642,7 @@ export class BoardManager {
                 return
             }
 
-            this.jewelTileIds.add(tileId)
+            this.addJewel(tileId)
         }
     }
 
@@ -661,7 +668,7 @@ export class BoardManager {
                 continue
             }
 
-            this.jewelTileIds.add(tileId)
+            this.addJewel(tileId)
             routeJewelCount += 1
         }
     }
@@ -690,16 +697,18 @@ export class BoardManager {
             .map((segment) => segment.tileId)
     }
 
-    collectJewelAtPosition(position: Position): boolean {
+    collectJewelAtPosition(position: Position): number {
         const tileId = this.tileIds[position.row][position.col]
 
         if (!this.jewelTileIds.has(tileId)) {
-            return false
+            return 0
         }
 
+        const value = this.jewelValues.get(tileId) ?? 1
         this.jewelTileIds.delete(tileId)
+        this.jewelValues.delete(tileId)
         this.refillCollectedJewel()
-        return true
+        return value
     }
 
     refillCollectedJewel(): void {
@@ -714,7 +723,7 @@ export class BoardManager {
         const candidateTileId = offRouteTileIds[0]
 
         if (candidateTileId !== undefined) {
-            this.jewelTileIds.add(candidateTileId)
+            this.addJewel(candidateTileId)
             return
         }
 
@@ -722,7 +731,7 @@ export class BoardManager {
             const routeCandidateId = eligibleTileIds.find((tileId) => routeTileIds.has(tileId))
 
             if (routeCandidateId !== undefined) {
-                this.jewelTileIds.add(routeCandidateId)
+                this.addJewel(routeCandidateId)
                 return
             }
         }
@@ -730,8 +739,66 @@ export class BoardManager {
         const fallbackTileId = eligibleTileIds[0]
 
         if (fallbackTileId !== undefined) {
-            this.jewelTileIds.add(fallbackTileId)
+            this.addJewel(fallbackTileId)
         }
+    }
+
+    addJewel(tileId: number): void {
+        this.jewelTileIds.add(tileId)
+        this.jewelValues.set(tileId, this.pickJewelValue())
+    }
+
+    pickJewelValue(): number {
+        return Random.weightedPick([
+            { item: 1, weight: 48 },
+            { item: 2, weight: 28 },
+            { item: 3, weight: 17 },
+            { item: 5, weight: 7 },
+        ])
+    }
+
+    expireJewels(count: number): Array<{ position: Position, value: number }> {
+        const expired: Array<{ position: Position, value: number }> = []
+        const currentTileId = this.tileIds[this.robotPosition.row][this.robotPosition.col]
+        const candidates = Random.shuffle([...this.jewelTileIds].filter((tileId) => tileId !== currentTileId))
+
+        for (const tileId of candidates.slice(0, count)) {
+            const position = this.findTilePosition(tileId)
+
+            if (position === null) {
+                continue
+            }
+
+            expired.push({
+                position,
+                value: this.jewelValues.get(tileId) ?? 1,
+            })
+            this.jewelTileIds.delete(tileId)
+            this.jewelValues.delete(tileId)
+        }
+
+        while (this.jewelTileIds.size < this.currentDifficulty.initialJewelCount) {
+            const beforeSize = this.jewelTileIds.size
+            this.refillCollectedJewel()
+
+            if (this.jewelTileIds.size === beforeSize) {
+                break
+            }
+        }
+
+        return expired
+    }
+
+    findTilePosition(tileId: number): Position | null {
+        for (let row = 0; row < this.tileIds.length; row += 1) {
+            for (let col = 0; col < this.tileIds[row].length; col += 1) {
+                if (this.tileIds[row][col] === tileId) {
+                    return { row, col }
+                }
+            }
+        }
+
+        return null
     }
 
     simulateStep(position: Position, direction: DirectionValue): StepSimulation {

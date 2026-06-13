@@ -5,6 +5,30 @@ import { startGame, destroyGame } from '../../../game/GameManager'
 import type { GameResult, GameSettings } from '../../App'
 import { getGameTimeLimitSeconds } from '../../data/gameRules'
 import gameBgm from '../../../../assets/bkue_ghost/audio/game_bgm.mp3'
+import scoreDigit0Image from '../../../../assets/Image/score/digit_0.png'
+import scoreDigit1Image from '../../../../assets/Image/score/digit_1.png'
+import scoreDigit2Image from '../../../../assets/Image/score/digit_2.png'
+import scoreDigit3Image from '../../../../assets/Image/score/digit_3.png'
+import scoreDigit4Image from '../../../../assets/Image/score/digit_4.png'
+import scoreDigit5Image from '../../../../assets/Image/score/digit_5.png'
+import scoreDigit6Image from '../../../../assets/Image/score/digit_6.png'
+import scoreDigit7Image from '../../../../assets/Image/score/digit_7.png'
+import scoreDigit8Image from '../../../../assets/Image/score/digit_8.png'
+import scoreDigit9Image from '../../../../assets/Image/score/digit_9.png'
+import scoreDigitColonImage from '../../../../assets/Image/score/digit_colon.png'
+import scorePanelImage from '../../../../assets/Image/score/score_panel.png'
+import timeDigit0Image from '../../../../assets/Image/time/digit_0.png'
+import timeDigit1Image from '../../../../assets/Image/time/digit_1.png'
+import timeDigit2Image from '../../../../assets/Image/time/digit_2.png'
+import timeDigit3Image from '../../../../assets/Image/time/digit_3.png'
+import timeDigit4Image from '../../../../assets/Image/time/digit_4.png'
+import timeDigit5Image from '../../../../assets/Image/time/digit_5.png'
+import timeDigit6Image from '../../../../assets/Image/time/digit_6.png'
+import timeDigit7Image from '../../../../assets/Image/time/digit_7.png'
+import timeDigit8Image from '../../../../assets/Image/time/digit_8.png'
+import timeDigit9Image from '../../../../assets/Image/time/digit_9.png'
+import timeDigitColonImage from '../../../../assets/Image/time/digit_colon.png'
+import timePanelImage from '../../../../assets/Image/time/time_panel.png'
 
 type Props = {
   settings: GameSettings
@@ -20,6 +44,73 @@ type GameHudState = {
   ruleName?: string
 }
 
+
+const scoreDigitImages: Record<string, string> = {
+  '0': scoreDigit0Image,
+  '1': scoreDigit1Image,
+  '2': scoreDigit2Image,
+  '3': scoreDigit3Image,
+  '4': scoreDigit4Image,
+  '5': scoreDigit5Image,
+  '6': scoreDigit6Image,
+  '7': scoreDigit7Image,
+  '8': scoreDigit8Image,
+  '9': scoreDigit9Image,
+  ':': scoreDigitColonImage,
+}
+
+const timeDigitImages: Record<string, string> = {
+  '0': timeDigit0Image,
+  '1': timeDigit1Image,
+  '2': timeDigit2Image,
+  '3': timeDigit3Image,
+  '4': timeDigit4Image,
+  '5': timeDigit5Image,
+  '6': timeDigit6Image,
+  '7': timeDigit7Image,
+  '8': timeDigit8Image,
+  '9': timeDigit9Image,
+  ':': timeDigitColonImage,
+}
+
+function formatTimer(value: number) {
+  const seconds = Math.max(0, Math.floor(value))
+  const minutes = Math.floor(seconds / 60)
+  const rest = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${rest.toString().padStart(2, '0')}`
+}
+
+function DigitSpriteText({
+  value,
+  digitImages,
+  className = '',
+}: {
+  value: string
+  digitImages: Record<string, string>
+  className?: string
+}) {
+  return (
+    <span className={`digitSpriteText ${className}`} aria-label={value}>
+      {value.split('').map((char, index) => {
+        const src = digitImages[char]
+        if (!src) {
+          return <span key={`${char}-${index}`} className="digitFallback">{char}</span>
+        }
+
+        return (
+          <img
+            key={`${char}-${index}`}
+            src={src}
+            alt=""
+            className={char === ':' ? 'digitSprite digitSpriteColon' : 'digitSprite'}
+            draggable={false}
+          />
+        )
+      })}
+    </span>
+  )
+}
+
 export default function GameScreen({ settings, onFinish }: Props) {
   const difficulty = settings.difficulty ?? 'normal'
   const [hud, setHud] = useState<GameHudState>({
@@ -27,7 +118,7 @@ export default function GameScreen({ settings, onFinish }: Props) {
     playerCount: settings.playerCount,
     scores: Array(settings.playerCount).fill(null),
     currentScore: null,
-    timeLeft: getGameTimeLimitSeconds(difficulty),
+    timeLeft: getGameTimeLimitSeconds(),
     ruleName: 'Robot Slide',
   })
   const ref = useRef<HTMLDivElement | null>(null)
@@ -85,45 +176,40 @@ export default function GameScreen({ settings, onFinish }: Props) {
   return (
     <div className="gameScreenShell">
       <div className="gameScreenPanel">
-        <div className="gameRuleCard">
-          <span className="gameRuleLabel">Rule</span>
-          <strong className="gameRuleName">
-            {hud.ruleName ?? 'Robot Slide'}
-          </strong>
-        </div>
-
-        <aside className="gameHtmlHud">
-          <div className="gameHudCard gameHudPlayerCard">
-            <p className="gameHudLabel">Player</p>
-            <p className="gameHudMain">
+        <aside className="gamePrimaryHud" aria-label="Game status">
+          <div className="compactHudRow compactHudTextRow">
+            <span className="compactHudLabel">PLAYER</span>
+            <strong className="compactHudText">
               {hud.currentPlayerIndex + 1} / {hud.playerCount}
-            </p>
+            </strong>
           </div>
 
-          <div className="gameHudCard">
-            <p className="gameHudLabel">Time</p>
-            <p className="gameHudTimer">
-              {hud.timeLeft}s
-            </p>
+          <div className="compactHudRow">
+            <span className="compactHudLabel">TIME</span>
+            <span
+              className="hudImageValue hudTimeValue"
+              style={{ backgroundImage: `url(${timePanelImage})` }}
+            >
+              <DigitSpriteText
+                value={formatTimer(hud.timeLeft)}
+                digitImages={timeDigitImages}
+                className="compactHudDigits"
+              />
+            </span>
           </div>
 
-          <div className="gameHudCard">
-            <p className="gameHudLabel">Score</p>
-            <p className="gameHudScore">
-              {hud.currentScore ?? 0}
-            </p>
-          </div>
-
-          <div className="gameHudCard">
-            <p className="gameHudLabel">All Scores</p>
-            <ul className="gameHudScoreList">
-              {hud.scores.map((score, index) => (
-                <li key={index}>
-                  <span>P{index + 1}</span>
-                  <strong>{score ?? '-'}</strong>
-                </li>
-              ))}
-            </ul>
+          <div className="compactHudRow">
+            <span className="compactHudLabel">SCORE</span>
+            <span
+              className="hudImageValue hudScoreValue"
+              style={{ backgroundImage: `url(${scorePanelImage})` }}
+            >
+              <DigitSpriteText
+                value={(hud.currentScore ?? 0).toString().padStart(2, '0')}
+                digitImages={scoreDigitImages}
+                className="compactHudDigits compactHudScoreDigits"
+              />
+            </span>
           </div>
         </aside>
 

@@ -85,8 +85,6 @@ const SLIDING_TILE_DEPTH_BASE = 1000
 const ROBOT_DEPTH = 1200
 const OVERLAY_DEPTH = 2100
 const RESULT_DEPTH = 2200
-const ROBOT_SCALE = 1.15
-const GEM_TEXTURE_KEYS = ['gem-idle', 'gem-blue-idle', 'gem-cyan-idle', 'gem-purple-idle']
 
 export class RobotGrid {
     scene: Phaser.Scene
@@ -232,7 +230,7 @@ export class RobotGrid {
                 tileView.position = { row, col }
                 tileView.tile = tile
                 tileView.tileSprite.setTexture(this.getTileTexture(tile))
-                tileView.tileSprite.setAngle(this.getTileAngle(tile))
+                tileView.tileSprite.setAngle(this.getTileAngle())
                 tileView.tileSprite.setScale(this.getTextureScale(this.getTileTexture(tile), GameConfig.TILE_SIZE - 10))
                 const center = this.getCellCenter(tileView.position)
                 tileView.container.x = center.x
@@ -502,7 +500,7 @@ export class RobotGrid {
                 onComplete: () => {
                     this.robotView.sprite.stop()
                     this.robotView.sprite.setTexture(this.getRobotIdleTexture(snapshot.robotDirection))
-                    this.robotView.sprite.setScale(ROBOT_SCALE)
+                    this.robotView.sprite.setScale(GameConfig.ROBOT_SCALE)
                     this.sync(snapshot, this.latestTimeLeft)
 
                     if (stepResult.collectedJewel) {
@@ -744,18 +742,24 @@ export class RobotGrid {
     }
 
     createBackdrop(): void {
-        const backdrop = this.scene.add.graphics()
-        backdrop.fillStyle(0x071f29, 1)
-        backdrop.fillRect(0, 0, GameConfig.GAME_WIDTH, GameConfig.GAME_HEIGHT)
-        backdrop.fillStyle(0x0d3847, 1)
-        backdrop.fillRect(0, 0, GameConfig.GAME_WIDTH, 230)
-        backdrop.fillStyle(0x124d62, 0.8)
-        backdrop.fillRect(0, 230, GameConfig.GAME_WIDTH, 220)
-        backdrop.fillStyle(0x1f677b, 0.55)
-        backdrop.fillRect(0, 450, GameConfig.GAME_WIDTH, 270)
+        this.scene.add.image(640, 360, 'game-background').setDisplaySize(
+            GameConfig.GAME_WIDTH,
+            GameConfig.GAME_HEIGHT,
+        )
 
-        const boardAura = this.scene.add.ellipse(640, 388, 640, 560, 0x8be3ef, 0.12)
-        const boardAuraInner = this.scene.add.ellipse(640, 388, 480, 430, 0xd6ffff, 0.08)
+        const backdrop = this.scene.add.graphics()
+        backdrop.fillStyle(0x04181f, 0.38)
+        backdrop.fillRect(0, 0, GameConfig.GAME_WIDTH, GameConfig.GAME_HEIGHT)
+        backdrop.fillStyle(0x082731, 0.62)
+        backdrop.fillRoundedRect(342, 68, 596, 620, 36)
+        backdrop.lineStyle(3, 0xffd274, 0.42)
+        backdrop.strokeRoundedRect(342, 68, 596, 620, 36)
+        backdrop.fillStyle(0x0d4254, 0.32)
+        backdrop.fillRect(0, 0, GameConfig.GAME_WIDTH, 106)
+        backdrop.fillRect(0, 612, GameConfig.GAME_WIDTH, 108)
+
+        const boardAura = this.scene.add.ellipse(640, 388, 760, 610, 0x8be3ef, 0.16)
+        const boardAuraInner = this.scene.add.ellipse(640, 388, 560, 470, 0xd6ffff, 0.11)
         this.scene.tweens.add({
             targets: boardAura,
             scaleX: 1.06,
@@ -807,130 +811,42 @@ export class RobotGrid {
     }
 
     createHud(): void {
-        const hudPanel = this.scene.add.graphics()
-        this.drawRoundedPanel(hudPanel, 28, 28, 1224, 124, 30, 0x072a36, 0.78, 0x67c9d6, 2)
-
-        this.scene.add.text(72, 42, 'SCORE', {
-            fontFamily: UI_FONT,
-            fontSize: '18px',
-            color: '#9fdfea',
-            fontStyle: 'bold',
-        })
-
-        this.scoreValueText = this.scene.add.text(72, 60, '000000', {
-            fontFamily: UI_FONT,
-            fontSize: '48px',
-            color: '#fef7d1',
-            fontStyle: 'bold',
-        })
-
-        this.scene.add.text(308, 42, 'TARGET', {
-            fontFamily: UI_FONT,
-            fontSize: '18px',
-            color: '#ffccbf',
-            fontStyle: 'bold',
-        })
-
-        this.rivalScoreText = this.scene.add.text(308, 68, '000000', {
-            fontFamily: UI_FONT,
-            fontSize: '36px',
-            color: '#ffe2db',
-            fontStyle: 'bold',
-        })
-
-        this.battleLeadText = this.scene.add.text(308, 96, 'EVEN', {
-            fontFamily: UI_FONT,
-            fontSize: '20px',
-            color: '#dffcff',
-            fontStyle: 'bold',
-        })
-
-        this.battleStateText = this.scene.add.text(308, 118, 'CLASH', {
-            fontFamily: UI_FONT,
-            fontSize: '14px',
-            color: '#9fdfea',
-        })
-
-        const battleGaugeTrack = this.scene.add.graphics()
-        this.drawRoundedPanel(battleGaugeTrack, 506, 42, 268, 12, 6, 0x103847, 1)
-        this.battleGaugePlayer = this.scene.add.graphics()
-        this.battleGaugeRival = this.scene.add.graphics()
-        this.battleGaugePlayer.x = 506
-        this.battleGaugePlayer.y = 42
-        this.battleGaugeRival.x = 506
-        this.battleGaugeRival.y = 42
-
-        this.awardText = this.scene.add.text(74, 114, '', {
-            fontFamily: UI_FONT,
-            fontSize: '16px',
-            color: '#b4f4ff',
-            fontStyle: 'bold',
-        })
-        this.awardText.setAlpha(0)
-
-        const comboPill = this.scene.add.graphics()
-        this.drawRoundedPanel(comboPill, 506, 60, 268, 32, 16, 0x8fe5eb, 0.95)
-        this.comboText = this.scene.add.text(640, 66, 'JEWELS 0', {
-            fontFamily: UI_FONT,
-            fontSize: '20px',
-            color: '#0f4251',
-            fontStyle: 'bold',
-        }).setOrigin(0.5, 0)
-
-        const routePill = this.scene.add.graphics()
-        this.drawRoundedPanel(routePill, 474, 100, 332, 32, 16, 0x0d4254, 0.96, 0x6fd4df, 2)
-        this.routeText = this.scene.add.text(640, 106, 'SAFE 0', {
-            fontFamily: UI_FONT,
-            fontSize: '20px',
-            color: '#dcffff',
-            fontStyle: 'bold',
-        }).setOrigin(0.5, 0)
-
-        this.routeDetailText = this.scene.add.text(640, 142, '', {
-            fontFamily: UI_FONT,
-            fontSize: '18px',
-            color: '#8ec7d1',
-        }).setOrigin(0.5, 0)
-
-        const timerPanel = this.scene.add.graphics()
-        this.drawRoundedPanel(timerPanel, 1026, 42, 170, 56, 22, 0x0d4254, 0.98, 0x6fd4df, 2)
-        this.timerText = this.scene.add.text(1112, 48, `${GameConfig.SESSION_SECONDS}s`, {
-            fontFamily: UI_FONT,
-            fontSize: '30px',
-            color: '#dffcff',
-            fontStyle: 'bold',
-        }).setOrigin(0.5, 0)
-
-        const timerTrack = this.scene.add.graphics()
-        this.drawRoundedPanel(timerTrack, 1016, 104, 192, 12, 6, 0x103847, 1)
-        this.timerFill = this.scene.add.graphics()
-        this.timerFill.x = 1016
-        this.timerFill.y = 104
-
-        this.phaseText = this.scene.add.text(1112, 126, '', {
-            fontFamily: UI_FONT,
-            fontSize: '16px',
-            color: '#8ec7d1',
-        }).setOrigin(0.5, 0)
-
-        this.footerText = this.scene.add.text(72, 650, '', {
-            fontFamily: UI_FONT,
-            fontSize: '18px',
-            color: '#b7dbe2',
-        })
-
-        this.multiplierText = this.scene.add.text(742, 650, '', {
-            fontFamily: UI_FONT,
-            fontSize: '18px',
-            color: '#f6eab5',
-        })
+        // HTML側の左上HUDへ集約するため、Phaser側の上帯HUD/下部統計HUDは表示しません。
+        // updateScore/updateBattle/updateTimer から参照されるオブジェクトだけを非表示で作成します。
+        this.scoreValueText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.rivalScoreText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.battleLeadText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.battleStateText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.battleGaugePlayer = this.scene.add.graphics().setVisible(false)
+        this.battleGaugeRival = this.scene.add.graphics().setVisible(false)
+        this.awardText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.comboText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.routeText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.routeDetailText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.timerText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.phaseText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.timerFill = this.scene.add.graphics().setVisible(false)
+        this.footerText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
+        this.multiplierText = this.scene.add.text(-1000, -1000, '', { fontFamily: UI_FONT, fontSize: '1px' }).setVisible(false)
     }
 
     createBoardBase(): void {
         const boardPanel = this.scene.add.graphics()
-        this.drawRoundedPanel(boardPanel, 324, 142, 632, 466, 42, 0x093242, 0.88, 0x7fd7e4, 3)
-
         const boardSize = this.latestSnapshot?.boardSize ?? GameConfig.BOARD_SIZE
+        const boardPixelSize = boardSize * GameConfig.TILE_SIZE
+        const panelPadding = 26
+        this.drawRoundedPanel(
+            boardPanel,
+            GameConfig.BOARD_ORIGIN_X - panelPadding,
+            GameConfig.BOARD_ORIGIN_Y - panelPadding,
+            boardPixelSize + panelPadding * 2,
+            boardPixelSize + panelPadding * 2,
+            42,
+            0x093242,
+            0.03,
+            0xffd274,
+            0,
+        )
 
         for (let row = 0; row < boardSize; row += 1) {
             for (let col = 0; col < boardSize; col += 1) {
@@ -1011,7 +927,7 @@ export class RobotGrid {
             const slideScale = (GameConfig.TILE_SIZE - 8) / 256
 
             tileSprite.setScale(tileScale)
-            tileSprite.setAngle(this.getTileAngle(tile))
+            tileSprite.setAngle(this.getTileAngle())
             slideFx.setScale(slideScale, tileScale)
             slideFx.setVisible(false)
             slideFx.setAlpha(0.92)
@@ -1110,9 +1026,16 @@ export class RobotGrid {
 
     createRobotView(): RobotView {
         const container = this.scene.add.container(0, 0)
-        const shadow = this.scene.add.ellipse(0, 18, 46, 18, 0x000000, 0.18)
+        const shadow = this.scene.add.ellipse(
+            0,
+            GameConfig.TILE_SIZE * 0.28,
+            GameConfig.TILE_SIZE * 0.72,
+            GameConfig.TILE_SIZE * 0.25,
+            0x000000,
+            0.18,
+        )
         const sprite = this.scene.add.sprite(0, 0, 'robot-right-idle')
-        sprite.setScale(ROBOT_SCALE)
+        sprite.setScale(GameConfig.ROBOT_SCALE)
 
         container.add([shadow, sprite])
         container.setDepth(ROBOT_DEPTH)
@@ -1208,43 +1131,16 @@ export class RobotGrid {
     }
 
     createBoostButton(): BoostButtonView {
-        const container = this.scene.add.container(1112, 596)
-        const background = this.scene.add.graphics()
-        const label = this.scene.add.text(0, 0, 'BOOST', {
+        // BOOST表示は削除。setBoostActive から参照されるため、非表示のplaceholderだけ作成します。
+        const container = this.scene.add.container(-1000, -1000)
+        const background = this.scene.add.graphics().setVisible(false)
+        const label = this.scene.add.text(0, 0, '', {
             fontFamily: UI_FONT,
-            fontSize: '22px',
-            color: '#dff9ff',
-            fontStyle: 'bold',
-        }).setOrigin(0.5)
+            fontSize: '1px',
+            color: '#ffffff',
+        }).setVisible(false)
         container.add([background, label])
-        container.setSize(172, 56)
-        container.setInteractive(
-            new Phaser.Geom.Rectangle(-86, -28, 172, 56),
-            Phaser.Geom.Rectangle.Contains,
-        )
-
-        container.on('pointerdown', () => {
-            if (!this.interactionEnabled || this.boostStartHandler === null) {
-                return
-            }
-
-            this.boostStartHandler()
-        })
-        container.on('pointerup', () => {
-            if (this.boostEndHandler !== null) {
-                this.boostEndHandler()
-            }
-        })
-        container.on('pointerout', () => {
-            if (this.boostEndHandler !== null) {
-                this.boostEndHandler()
-            }
-        })
-        container.on('pointerupoutside', () => {
-            if (this.boostEndHandler !== null) {
-                this.boostEndHandler()
-            }
-        })
+        container.setVisible(false)
 
         return {
             container,
@@ -1303,7 +1199,7 @@ export class RobotGrid {
     createJewelMarker(): Phaser.GameObjects.Container {
         const container = this.scene.add.container(0, 0)
         const glow = this.scene.add.circle(0, 0, 20, 0xffe39d, 0.18)
-        const gem = this.scene.add.image(0, 0, Phaser.Utils.Array.GetRandom(GEM_TEXTURE_KEYS))
+        const gem = this.scene.add.image(0, 0, 'gem-idle')
         gem.setScale(this.getTextureScale(gem.texture.key, GameConfig.TILE_SIZE * 0.48))
 
         container.add([glow, gem])
@@ -1320,9 +1216,50 @@ export class RobotGrid {
         return container
     }
 
+    setJewelValue(container: Phaser.GameObjects.Container, value: number): void {
+        const gem = container.getAt(1) as Phaser.GameObjects.Image | undefined
+
+        if (gem === undefined) {
+            return
+        }
+
+        const textureKey = this.getJewelTextureForValue(value)
+        gem.setTexture(textureKey)
+        gem.setScale(this.getTextureScale(textureKey, GameConfig.TILE_SIZE * this.getJewelSizeRatio(value)))
+    }
+
+    getJewelTextureForValue(value: number): string {
+        if (value >= 5) {
+            return 'gem-purple-idle'
+        }
+
+        if (value >= 3) {
+            return 'gem-blue-idle'
+        }
+
+        if (value >= 2) {
+            return 'gem-cyan-idle'
+        }
+
+        return 'gem-idle'
+    }
+
+    getJewelSizeRatio(value: number): number {
+        if (value >= 5) {
+            return 0.56
+        }
+
+        if (value >= 3) {
+            return 0.52
+        }
+
+        return 0.48
+    }
+
     refreshTileStates(snapshot: BoardSnapshot): void {
         const movableKeys = new Set(snapshot.movablePositions.map((position) => `${position.row}-${position.col}`))
         const jewelTileIds = new Set(snapshot.jewelTileIds)
+        const jewelValues = snapshot.jewelValues
         const connectedTileIds = new Set(snapshot.routePreview.connectedTileIds)
         const dangerTileIds = new Set(snapshot.routePreview.dangerTileIds)
         const nextKey = snapshot.routePreview.nextPosition === null
@@ -1338,7 +1275,8 @@ export class RobotGrid {
             const isNext = key === nextKey
             const isCurrent = tileView.tile.id === currentTileId
             const hasJewel = jewelTileIds.has(tileView.tile.id)
-            this.drawTile(tileView, isMovable, isConnected, isDanger, isNext, isCurrent, hasJewel, snapshot.routePreview.riskLevel)
+            const jewelValue = jewelValues[tileView.tile.id] ?? 1
+            this.drawTile(tileView, isMovable, isConnected, isDanger, isNext, isCurrent, hasJewel, jewelValue, snapshot.routePreview.riskLevel)
         }
     }
 
@@ -1350,6 +1288,7 @@ export class RobotGrid {
         isNext: boolean,
         isCurrent: boolean,
         hasJewel: boolean,
+        jewelValue: number,
         riskLevel: RouteRiskLevel,
     ): void {
         const fillColor = isDanger
@@ -1401,7 +1340,7 @@ export class RobotGrid {
         )
 
         tileView.tileSprite.setTexture(this.getTileTexture(tileView.tile))
-        tileView.tileSprite.setAngle(this.getTileAngle(tileView.tile))
+        tileView.tileSprite.setAngle(this.getTileAngle())
         tileView.tileSprite.setAlpha(isDanger ? 0.88 : isConnected || isCurrent ? 1 : 0.94)
         tileView.tileSprite.setScale(
             this.getTextureScale(this.getTileTexture(tileView.tile), GameConfig.TILE_SIZE - 10)
@@ -1417,6 +1356,7 @@ export class RobotGrid {
         this.drawTilePath(tileView.pathGlow, tileView.tile, pathGlowColor, isConnected ? 16 : 8, isConnected ? 0.26 : 0.04)
         this.drawTilePath(tileView.pathBase, tileView.tile, pathColor, 8, isConnected || isCurrent ? 0.52 : 0.18)
         this.drawSpecialAura(tileView.specialAura, tileView.tile, isConnected || isCurrent)
+        this.setJewelValue(tileView.jewel, jewelValue)
         tileView.jewel.setVisible(hasJewel)
 
         this.toggleLoopTween(tileView.nextRing, isNext, 'next', tileView)
@@ -1534,8 +1474,21 @@ export class RobotGrid {
             ? 0xffb3a2
             : 0xffe2a8
 
-        this.drawRoundedPanel(this.boardThreatFrame, 316, 134, 648, 482, 46, strokeColor, 0.03, strokeColor, 4)
-        this.boardThreatFrame.alpha = 0.55
+        const boardSize = this.latestSnapshot?.boardSize ?? GameConfig.BOARD_SIZE
+        const boardPixelSize = boardSize * GameConfig.TILE_SIZE
+        this.drawRoundedPanel(
+            this.boardThreatFrame,
+            GameConfig.BOARD_ORIGIN_X - 34,
+            GameConfig.BOARD_ORIGIN_Y - 34,
+            boardPixelSize + 68,
+            boardPixelSize + 68,
+            46,
+            strokeColor,
+            0,
+            strokeColor,
+            2,
+        )
+        this.boardThreatFrame.alpha = 0.24
         this.boardPulseTween.resume()
     }
 
@@ -1657,7 +1610,7 @@ export class RobotGrid {
         this.robotView.container.scale = 1
         this.robotView.sprite.stop()
         this.robotView.sprite.setTexture(this.getRobotIdleTexture(direction))
-        this.robotView.sprite.setScale(ROBOT_SCALE)
+        this.robotView.sprite.setScale(GameConfig.ROBOT_SCALE)
         this.robotView.shadow.setScale(1, 1)
         this.robotView.shadow.setAlpha(0.18)
         this.applyRobotDirection(direction)
@@ -1666,7 +1619,7 @@ export class RobotGrid {
     applyRobotDirection(direction: DirectionValue): void {
         this.robotView.container.angle = 0
         this.robotView.sprite.setTexture(this.getRobotIdleTexture(direction))
-        this.robotView.sprite.setScale(ROBOT_SCALE)
+        this.robotView.sprite.setScale(GameConfig.ROBOT_SCALE)
     }
 
     getRobotIdleTexture(direction: DirectionValue): string {
@@ -1729,25 +1682,21 @@ export class RobotGrid {
         }
 
         if (tile.rotation === 0) {
-            return 'tile-corner-top-right'
+            return 'tile-corner-up-right'
         }
 
         if (tile.rotation === 1) {
-            return 'tile-corner-right-bottom'
+            return 'tile-corner-right-down'
         }
 
         if (tile.rotation === 2) {
-            return 'tile-corner-bottom-left'
+            return 'tile-corner-down-left'
         }
 
-        return 'tile-corner-left-top'
+        return 'tile-corner-left-up'
     }
 
-    getTileAngle(tile: PathTileSnapshot): number {
-        if (tile.kind === 'corner' && tile.rotation === 1) {
-            return 180
-        }
-
+    getTileAngle(): number {
         return 0
     }
 
@@ -1970,7 +1919,7 @@ export class RobotGrid {
         const tileBaseScale = this.getTextureScale(this.getTileTexture(tileView.tile), GameConfig.TILE_SIZE - 10)
             * (this.isTileMovable(tileView.position) ? 1.03 : 1)
 
-        ghost.setAngle(this.getTileAngle(tileView.tile))
+        ghost.setAngle(this.getTileAngle())
         ghost.setScale(tileBaseScale)
         ghost.setAlpha(0.32)
         ghost.setTint(0xdffcff)
@@ -2232,5 +2181,62 @@ export class RobotGrid {
                 flash.destroy()
             },
         })
+    }
+
+    emitJewelExpire(position: Position, value: number): void {
+        const center = this.getCellCenter(position)
+        const textureKey = this.getJewelTextureForValue(value)
+        const ghost = this.scene.add.image(center.x, center.y, textureKey)
+        ghost.setScale(this.getTextureScale(textureKey, GameConfig.TILE_SIZE * this.getJewelSizeRatio(value)))
+        ghost.setTint(0xb8f7ff)
+        ghost.setAlpha(0.78)
+        ghost.setDepth(OVERLAY_DEPTH)
+
+        this.scene.tweens.add({
+            targets: ghost,
+            scaleX: ghost.scaleX * 0.2,
+            scaleY: ghost.scaleY * 0.2,
+            alpha: 0,
+            angle: 28,
+            duration: 360,
+            ease: 'Back.easeIn',
+            onComplete: () => {
+                ghost.destroy()
+            },
+        })
+
+        const ring = this.scene.add.circle(center.x, center.y, GameConfig.TILE_SIZE * 0.24, 0x9ffbff, 0.2)
+        ring.setDepth(OVERLAY_DEPTH)
+        this.scene.tweens.add({
+            targets: ring,
+            scaleX: 2,
+            scaleY: 2,
+            alpha: 0,
+            duration: 420,
+            ease: 'Sine.easeOut',
+            onComplete: () => {
+                ring.destroy()
+            },
+        })
+
+        for (let index = 0; index < 8; index += 1) {
+            const spark = this.scene.add.rectangle(center.x, center.y, 8, 3, 0x9ffbff, 0.82)
+            spark.setDepth(OVERLAY_DEPTH)
+            spark.rotation = Phaser.Math.FloatBetween(0, Math.PI * 2)
+
+            this.scene.tweens.add({
+                targets: spark,
+                x: center.x + Phaser.Math.Between(-34, 34),
+                y: center.y + Phaser.Math.Between(-34, 34),
+                alpha: 0,
+                scaleX: 0.15,
+                scaleY: 0.15,
+                duration: Phaser.Math.Between(260, 460),
+                ease: 'Sine.easeOut',
+                onComplete: () => {
+                    spark.destroy()
+                },
+            })
+        }
     }
 }

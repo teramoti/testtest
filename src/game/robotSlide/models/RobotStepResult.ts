@@ -10,6 +10,7 @@ export interface RobotStepResult {
     direction: Direction
     alive: boolean
     collectedJewel: boolean
+    collectedJewelValue: number
     triggeredCurrent: boolean
     loopDetected: boolean
     blockedPosition: Position | null

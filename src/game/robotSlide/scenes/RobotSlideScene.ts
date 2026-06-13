@@ -15,7 +15,7 @@ import { RobotGrid } from '../ui/RobotGrid.ts'
 import { GameConfig } from '../utils/GameConfig.ts'
 
 type RobotGameResult = {
-    results: Array<{ player: number, score: number }>
+    results: Array<{ player: number, score: number, missCount: number, travelCount: number }>
 }
 
 type RobotGameOptions = {
@@ -27,6 +27,7 @@ type RobotGameOptions = {
     onFinish?: (result: RobotGameResult) => void
     currentPlayerIndex?: number
     scores?: number[]
+    playerStats?: Array<{ score: number, missCount: number, travelCount: number }>
 }
 
 export class RobotSlideScene extends Phaser.Scene {
@@ -42,6 +43,7 @@ export class RobotSlideScene extends Phaser.Scene {
     timerEvent: Phaser.Time.TimerEvent | null
     robotEvent: Phaser.Time.TimerEvent | null
     retryEvent: Phaser.Time.TimerEvent | null
+    jewelExpireEvent: Phaser.Time.TimerEvent | null
     timeLeft: number
     sessionEnded: boolean
     roundLive: boolean
@@ -62,6 +64,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.timerEvent = null
         this.robotEvent = null
         this.retryEvent = null
+        this.jewelExpireEvent = null
         this.timeLeft = GameConfig.SESSION_SECONDS
         this.sessionEnded = false
         this.roundLive = false
@@ -90,6 +93,8 @@ export class RobotSlideScene extends Phaser.Scene {
         this.audioDirector = new AudioDirector(this)
         this.connectEvents()
         this.events.once('shutdown', () => {
+            this.jewelExpireEvent?.remove()
+            this.jewelExpireEvent = null
             this.audioDirector.destroy()
         })
         this.startSession()
@@ -143,6 +148,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.robotGrid.setInteractionEnabled(false)
         this.robotGrid.setBoostActive(false)
         this.audioDirector.setAmbience(0)
+        this.startJewelExpireTimer()
 
         const snapshot = this.boardManager.getSnapshot()
         this.applyBattleSnapshot(this.latestBattleSnapshot, true)
@@ -177,6 +183,36 @@ export class RobotSlideScene extends Phaser.Scene {
                 this.advanceRobot()
             },
         })
+    }
+
+    startJewelExpireTimer(): void {
+        if (this.jewelExpireEvent !== null) {
+            this.jewelExpireEvent.remove()
+        }
+
+        this.jewelExpireEvent = this.time.addEvent({
+            delay: GameConfig.JEWEL_EXPIRE_SECONDS * 1000,
+            loop: true,
+            callback: () => {
+                this.expireJewels()
+            },
+        })
+    }
+
+    expireJewels(): void {
+        if (this.sessionEnded || this.retryPending || !this.roundLive) {
+            return
+        }
+
+        const expiredJewels = this.boardManager.expireJewels(GameConfig.JEWEL_EXPIRE_COUNT)
+
+        for (const jewel of expiredJewels) {
+            this.robotGrid.emitJewelExpire(jewel.position, jewel.value)
+        }
+
+        if (expiredJewels.length > 0) {
+            this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
+        }
     }
 
     handleTileSelected(position: Position): void {
@@ -266,8 +302,8 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         if (stepResult.collectedJewel) {
-            this.scoreManager.registerJewelCollect(afterSnapshot.routePreview)
-            this.audioDirector.playJewel(1)
+            this.scoreManager.registerJewelCollect(afterSnapshot.routePreview, stepResult.collectedJewelValue)
+            this.audioDirector.playJewel(stepResult.collectedJewelValue)
             this.cameras.main.shake(80, 0.0015)
         }
 
@@ -328,6 +364,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.robotGrid.setInteractionEnabled(true)
         const snapshot = this.boardManager.getSnapshot()
         this.robotGrid.sync(snapshot, this.timeLeft)
+        this.startJewelExpireTimer()
         this.robotGrid.showCallout('RECOVER', 'KEEP SCORING', 0xffd8a1, 620)
         this.updateThreat(snapshot)
     }
@@ -484,12 +521,24 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         this.finishSubmitted = true
-        const score = this.scoreManager.getSnapshot().score
+        const snapshot = this.scoreManager.getSnapshot()
+        const score = snapshot.score
         const playerCount = this.getPlayerCount()
         const currentPlayerIndex = this.getCurrentPlayerIndex()
         const scores = Array.from({ length: playerCount }, (_, index) => this.options.scores?.[index] ?? 0)
+        const playerStats = Array.from({ length: playerCount }, (_, index) => this.options.playerStats?.[index] ?? {
+            score: this.options.scores?.[index] ?? 0,
+            missCount: 0,
+            travelCount: 0,
+        })
         scores[currentPlayerIndex] = score
+        playerStats[currentPlayerIndex] = {
+            score,
+            missCount: snapshot.crashCount,
+            travelCount: snapshot.travelCount,
+        }
         this.options.scores = scores
+        this.options.playerStats = playerStats
         this.emitHud(score)
 
         if (currentPlayerIndex + 1 < playerCount) {
@@ -501,9 +550,11 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         this.onFinish?.({
-            results: scores.map((playerScore, index) => ({
+            results: playerStats.map((stats, index) => ({
                 player: index + 1,
-                score: playerScore,
+                score: stats.score,
+                missCount: stats.missCount,
+                travelCount: stats.travelCount,
             })),
         })
     }
