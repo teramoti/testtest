@@ -792,3 +792,178 @@ body {
 .answerCheckFooter {
   margin-top: 10px;
 }
+
+/* ========================================
+   Premium result screen override
+======================================== */
+.rankingBackground {
+  background-color: #1a1108;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.rankingScreen {
+  padding: 42px 72px 90px;
+  background:
+    linear-gradient(180deg, rgba(15, 8, 2, 0.18), rgba(15, 8, 2, 0.42));
+  border: none;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 8px rgba(255, 210, 116, 0.18);
+}
+
+.rankingScreen::before {
+  content: "";
+  position: absolute;
+  inset: 26px;
+  z-index: 1;
+  border: 2px solid rgba(255, 210, 116, 0.45);
+  border-radius: 26px;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.32),
+    0 0 22px rgba(255, 188, 54, 0.22);
+}
+
+.rankingHeader {
+  margin-bottom: 14px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.42);
+}
+
+.resultKicker {
+  margin: 0 0 2px;
+  color: #ffd274;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+}
+
+.rankingScreen .rankTitle {
+  color: #fff0b9;
+  font-size: 60px;
+  line-height: 1;
+  text-shadow:
+    0 4px 0 #6d3800,
+    0 0 18px rgba(255, 213, 85, 0.7);
+}
+
+.rankingScreen .resultSubTitle {
+  margin-top: 8px;
+  color: #f9ddb0;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.rankingScreen .resultSubTitle strong {
+  color: #ffd274;
+  font-size: 30px;
+}
+
+.rankingScreen .rankingArea {
+  transform: translateY(-14px);
+}
+
+.rankingScreen .rankList {
+  width: min(1040px, 100%);
+  gap: 12px;
+}
+
+.rankingScreen .rankItem {
+  min-height: 82px;
+  padding: 0 26px;
+  background:
+    linear-gradient(90deg, rgba(33, 22, 10, 0.96), rgba(13, 10, 7, 0.9));
+  border: 2px solid rgba(199, 139, 45, 0.8);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.04),
+    0 7px 0 rgba(48, 29, 5, 0.35),
+    0 16px 24px rgba(0, 0, 0, 0.24);
+}
+
+.rankingScreen .rankItemFirst {
+  min-height: 96px;
+  border-color: rgba(255, 213, 80, 0.96);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 250, 174, 0.22),
+    0 7px 0 rgba(85, 50, 0, 0.42),
+    0 0 30px rgba(255, 197, 36, 0.32);
+}
+
+.rankingScreen .rankItemFirst::before {
+  background: linear-gradient(110deg, rgba(255, 205, 70, 0.22), rgba(255, 121, 42, 0.12), rgba(255, 205, 70, 0.22));
+}
+
+.rankLeft {
+  width: 168px;
+}
+
+.rankingScreen .rankNo {
+  color: #ffd274;
+  min-width: 74px;
+  font-size: 46px;
+  text-align: center;
+  text-shadow:
+    0 3px 0 #3b1d00,
+    0 0 12px rgba(255, 220, 80, 0.75);
+}
+
+.rankingScreen .rankDecoration {
+  opacity: 0.32;
+}
+
+.rankingScreen .rankPlayer {
+  display: inline-flex;
+  min-width: 430px;
+  padding: 12px 22px;
+  color: #fef7d1;
+  background: rgba(2, 16, 18, 0.52);
+  border: 1px solid rgba(255, 210, 116, 0.34);
+  border-radius: 12px;
+  font-size: 28px;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.rankingScreen .rankItemFirst .rankPlayer {
+  color: #fff7ca;
+  -webkit-text-fill-color: #fff7ca;
+  -webkit-text-stroke: 0;
+  font-size: 32px;
+}
+
+.rankingScreen .rankRight {
+  width: 280px;
+}
+
+.rankingScreen .rankScore {
+  color: #ffd274;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.48);
+}
+
+.rankingBackButton {
+  width: 360px;
+  height: 72px;
+  color: #2b1600;
+  background: linear-gradient(180deg, #ffe789, #d7951f);
+  border: 2px solid #fff0a9;
+  border-radius: 20px;
+  box-shadow:
+    0 7px 0 #714208,
+    0 16px 24px rgba(0, 0, 0, 0.3);
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.rankingBackButton:hover {
+  background: linear-gradient(180deg, #fff2ad, #e0a536);
+}
+
+.rankingBackButton:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 4px 0 #714208,
+    0 12px 18px rgba(0, 0, 0, 0.26);
+}

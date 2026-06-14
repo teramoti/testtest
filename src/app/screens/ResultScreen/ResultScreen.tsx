@@ -3,6 +3,7 @@ import './ResultScreen.css'
 import type { GameResult } from '../../App'
 import resultBgm from '../../../../assets/bkue_ghost/audio/result.mp3'
 import { playClickSound } from '../../audio/playClickSound'
+import resultBackground from '../../../../assets/Image/result/background.png'
 
 type Props = {
   result: GameResult
@@ -43,6 +44,13 @@ export default function ResultScreen({ result, onBack }: Props) {
       rankedResults.findIndex((candidate) => isSameRank(candidate, entry)) + 1
     )
   }, [rankedResults])
+  const topScore = rankedResults[0]?.score ?? 0
+  const bestScore = useMemo(() => {
+    const currentBest = Number(window.localStorage.getItem('robotSlideBestScore') ?? 0)
+    const nextBest = Math.max(currentBest, topScore)
+    window.localStorage.setItem('robotSlideBestScore', String(nextBest))
+    return nextBest
+  }, [topScore])
 
   useEffect(() => {
     const audio = new Audio(resultBgm)
@@ -122,7 +130,7 @@ export default function ResultScreen({ result, onBack }: Props) {
   }
 
   return (
-    <div className="resultBackColor rankingBackground">
+    <div className="resultBackColor rankingBackground" style={{ backgroundImage: `url(${resultBackground})` }}>
       <div className="resultScreen rankingScreen">
         {isConfettiVisible && (
           <div className="confettiLayer" aria-hidden="true">
@@ -145,11 +153,12 @@ export default function ResultScreen({ result, onBack }: Props) {
         )}
 
         <header className="resultHeader rankingHeader">
+          <p className="resultKicker">TIME UP</p>
           <h1 className="rankTitle">
             Result
           </h1>
           <p className="resultSubTitle">
-            Robot Slide Ranking
+            Best Score <strong>{bestScore}</strong>
           </p>
         </header>
 

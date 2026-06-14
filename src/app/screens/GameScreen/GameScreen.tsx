@@ -16,7 +16,6 @@ import scoreDigit7Image from '../../../../assets/Image/score/digit_7.png'
 import scoreDigit8Image from '../../../../assets/Image/score/digit_8.png'
 import scoreDigit9Image from '../../../../assets/Image/score/digit_9.png'
 import scoreDigitColonImage from '../../../../assets/Image/score/digit_colon.png'
-import scorePanelImage from '../../../../assets/Image/score/score_panel.png'
 import timeDigit0Image from '../../../../assets/Image/time/digit_0.png'
 import timeDigit1Image from '../../../../assets/Image/time/digit_1.png'
 import timeDigit2Image from '../../../../assets/Image/time/digit_2.png'
@@ -28,7 +27,6 @@ import timeDigit7Image from '../../../../assets/Image/time/digit_7.png'
 import timeDigit8Image from '../../../../assets/Image/time/digit_8.png'
 import timeDigit9Image from '../../../../assets/Image/time/digit_9.png'
 import timeDigitColonImage from '../../../../assets/Image/time/digit_colon.png'
-import timePanelImage from '../../../../assets/Image/time/time_panel.png'
 
 type Props = {
   settings: GameSettings
@@ -42,8 +40,14 @@ type GameHudState = {
   currentScore: number | null
   timeLeft: number
   ruleName?: string
+  jewelCount?: number
+  missCount?: number
+  chainCount?: number
+  efficiency?: number
+  lastEventLabel?: string
+  lastAward?: number
+  lastAwardDetail?: string
 }
-
 
 const scoreDigitImages: Record<string, string> = {
   '0': scoreDigit0Image,
@@ -78,6 +82,10 @@ function formatTimer(value: number) {
   const minutes = Math.floor(seconds / 60)
   const rest = seconds % 60
   return `${minutes.toString().padStart(2, '0')}:${rest.toString().padStart(2, '0')}`
+}
+
+function formatScore(value: number | null) {
+  return Math.max(0, Math.floor(value ?? 0)).toString().padStart(6, '0')
 }
 
 function DigitSpriteText({
@@ -120,6 +128,13 @@ export default function GameScreen({ settings, onFinish }: Props) {
     currentScore: null,
     timeLeft: getGameTimeLimitSeconds(),
     ruleName: 'Robot Slide',
+    jewelCount: 0,
+    missCount: 0,
+    chainCount: 0,
+    efficiency: 100,
+    lastEventLabel: 'READY',
+    lastAward: 0,
+    lastAwardDetail: '',
   })
   const ref = useRef<HTMLDivElement | null>(null)
   const hudTargetRef = useRef<EventTarget>(new EventTarget())
@@ -173,43 +188,58 @@ export default function GameScreen({ settings, onFinish }: Props) {
     }
   }, [difficulty, onFinish, settings])
 
+  const lastAward = hud.lastAward ?? 0
+
   return (
     <div className="gameScreenShell">
       <div className="gameScreenPanel">
         <aside className="gamePrimaryHud" aria-label="Game status">
-          <div className="compactHudRow compactHudTextRow">
-            <span className="compactHudLabel">PLAYER</span>
-            <strong className="compactHudText">
-              {hud.currentPlayerIndex + 1} / {hud.playerCount}
-            </strong>
+          <div className="hudHeaderRow">
+            <span>PLAYER {hud.currentPlayerIndex + 1}/{hud.playerCount}</span>
+            <strong>{difficulty.toUpperCase()}</strong>
           </div>
 
-          <div className="compactHudRow">
+          <div className="hudMainRow">
             <span className="compactHudLabel">TIME</span>
-            <span
-              className="hudImageValue hudTimeValue"
-              style={{ backgroundImage: `url(${timePanelImage})` }}
-            >
-              <DigitSpriteText
-                value={formatTimer(hud.timeLeft)}
-                digitImages={timeDigitImages}
-                className="compactHudDigits"
-              />
-            </span>
+            <DigitSpriteText
+              value={formatTimer(hud.timeLeft)}
+              digitImages={timeDigitImages}
+              className="compactHudDigits compactHudTimeDigits"
+            />
           </div>
 
-          <div className="compactHudRow">
+          <div className="hudMainRow">
             <span className="compactHudLabel">SCORE</span>
-            <span
-              className="hudImageValue hudScoreValue"
-              style={{ backgroundImage: `url(${scorePanelImage})` }}
-            >
-              <DigitSpriteText
-                value={(hud.currentScore ?? 0).toString().padStart(2, '0')}
-                digitImages={scoreDigitImages}
-                className="compactHudDigits compactHudScoreDigits"
-              />
-            </span>
+            <DigitSpriteText
+              value={formatScore(hud.currentScore)}
+              digitImages={scoreDigitImages}
+              className="compactHudDigits compactHudScoreDigits"
+            />
+          </div>
+
+          <div className="hudMetricGrid">
+            <div>
+              <span>JEWEL</span>
+              <strong>{hud.jewelCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>CHAIN</span>
+              <strong>{hud.chainCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>MISS</span>
+              <strong>{hud.missCount ?? 0}</strong>
+            </div>
+            <div>
+              <span>EFF</span>
+              <strong>{hud.efficiency ?? 100}%</strong>
+            </div>
+          </div>
+
+          <div className={`hudEvent ${lastAward > 0 ? 'hudEventHot' : ''}`}>
+            <span>{hud.lastEventLabel ?? 'READY'}</span>
+            {lastAward > 0 && <strong>+{lastAward}</strong>}
+            {hud.lastAwardDetail && <small>{hud.lastAwardDetail}</small>}
           </div>
         </aside>
 

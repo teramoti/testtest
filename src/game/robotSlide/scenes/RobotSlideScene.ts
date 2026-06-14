@@ -485,6 +485,7 @@ export class RobotSlideScene extends Phaser.Scene {
             return
         }
 
+        const scoreSnapshot = this.scoreManager.getSnapshot()
         const playerCount = this.getPlayerCount()
         const currentPlayerIndex = this.getCurrentPlayerIndex()
         const scores: Array<number | null> = Array(playerCount).fill(null)
@@ -503,6 +504,13 @@ export class RobotSlideScene extends Phaser.Scene {
                 currentScore: score,
                 timeLeft: this.timeLeft,
                 ruleName: 'Robot Slide',
+                jewelCount: scoreSnapshot.jewelCount,
+                missCount: scoreSnapshot.crashCount,
+                chainCount: scoreSnapshot.comboCount,
+                efficiency: scoreSnapshot.efficiency,
+                lastEventLabel: scoreSnapshot.lastEventLabel,
+                lastAward: scoreSnapshot.lastAward,
+                lastAwardDetail: scoreSnapshot.lastAwardDetail,
             },
         }))
     }

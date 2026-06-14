@@ -19,11 +19,11 @@ export class GameConfig {
     static MAX_LAYOUT_ATTEMPTS = 1200
     static INITIAL_JEWEL_COUNT = 10
     static PRIORITY_ROUTE_JEWEL_COUNT = 4
-    static JEWEL_SCORE = 1
+    static JEWEL_SCORE = 100
     static ROBOT_STEP_SCORE = 1
     static SLIDE_SCORE_PENALTY = 0
-    static TARGET_SCORE = 1000
-    static SPEED_SCORE_STEP = 900
+    static TARGET_SCORE = 1800
+    static SPEED_SCORE_STEP = 700
     static ROUTE_PREVIEW_LIMIT = 40
     static WARNING_ROUTE_STEPS = 3
     static DANGER_ROUTE_STEPS = 1
