@@ -4,6 +4,12 @@ import type { GameResult } from '../../App'
 import resultBgm from '../../../../assets/bkue_ghost/audio/result.mp3'
 import { playClickSound } from '../../audio/playClickSound'
 import resultBackground from '../../../../assets/Image/result/background.png'
+import rankFrame1 from '../../../../assets/Image/result/result_rank_01_frame.png'
+import rankFrame2 from '../../../../assets/Image/result/result_rank_02_frame.png'
+import rankFrame3 from '../../../../assets/Image/result/result_rank_03_frame.png'
+import rankFrame4 from '../../../../assets/Image/result/result_rank_04_frame.png'
+
+const rankFrames = [rankFrame1, rankFrame2, rankFrame3, rankFrame4]
 
 type Props = {
   result: GameResult
@@ -25,6 +31,16 @@ function isSameRank(a: GameResult['results'][number], b: GameResult['results'][n
   return a.score === b.score
     && (a.missCount ?? 0) === (b.missCount ?? 0)
     && (a.travelCount ?? 0) === (b.travelCount ?? 0)
+}
+
+function formatRankScore(score: number) {
+  return `${Math.max(0, Math.floor(score))} pt`
+}
+
+function formatRankSub(entry: GameResult['results'][number]) {
+  const miss = entry.missCount ?? 0
+  const step = entry.travelCount ?? 0
+  return `MISS ${miss} / STEP ${step}`
 }
 
 export default function ResultScreen({ result, onBack }: Props) {
@@ -163,38 +179,33 @@ export default function ResultScreen({ result, onBack }: Props) {
         </header>
 
         <section className="rankingArea">
-          <ul className="rankList">
+          <ul className="rankList scoreBoardList">
             {rankedResults.map((entry, index) => {
-              const isFirstPlace = displayedRanks[index] === 1
+              const rank = displayedRanks[index]
+              const rankFrame = rankFrames[Math.min(rank, 4) - 1] ?? rankFrames[3]
+              const isFirstPlace = rank === 1
 
               return (
                 <li
-                  className={`rankItem rankItemWaiting ${isFirstPlace ? 'rankItemFirst' : ''} ${isRankingAnimationStarted ? 'animatedRankItem' : ''}`}
+                  className={`scoreBoardItem rankItemWaiting ${isFirstPlace ? 'scoreBoardItemFirst' : ''} ${isRankingAnimationStarted ? 'animatedRankItem' : ''}`}
                   key={entry.player}
-                  style={{ animationDelay: `${index * 450}ms` }}
+                  style={{
+                    animationDelay: `${index * 450}ms`,
+                    backgroundImage: `url(${rankFrame})`,
+                  }}
                 >
-                  <div className="rankLeft">
-                    <span className="rankNo">
-                      {displayedRanks[index]}
-                    </span>
-                    <span
-                      className={`rankDecoration ${isFirstPlace ? 'rankStar' : 'rankTriangle'}`}
-                      aria-hidden="true"
-                    >
-                      {isFirstPlace ? <>&#9733;</> : <>&#9650;</>}
-                    </span>
+                  <span className="scoreBoardRankLabel">{rank}位</span>
+
+                  <div className="scoreBoardName">
+                    Player {entry.player}
                   </div>
 
-                  <div className="rankCenter">
-                    <span className="rankPlayer">
-                      Player {entry.player}
-                    </span>
+                  <div className="scoreBoardScore">
+                    {formatRankScore(entry.score)}
                   </div>
 
-                  <div className="rankRight">
-                    <span className="rankScore">
-                      SCORE : {entry.score}
-                    </span>
+                  <div className="scoreBoardSub">
+                    {formatRankSub(entry)}
                   </div>
                 </li>
               )

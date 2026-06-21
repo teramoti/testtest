@@ -362,13 +362,13 @@ export class BoardManager {
 
         for (let id = 1; id <= tileCount; id += 1) {
             const kind = Random.weightedPick(profile.tileWeights)
-            const feature: TileFeature = Math.random() < profile.currentFeatureChance ? 'current' : 'none'
+            const feature: TileFeature = Random.next() < profile.currentFeatureChance ? 'current' : 'none'
             const branchBias: BranchBias = Math.random() < 0.5 ? 'left' : 'right'
 
             this.tileCatalog.set(id, {
                 id,
                 kind,
-                rotation: Math.floor(Math.random() * 4),
+                rotation: Math.floor(Random.next() * 4),
                 feature,
                 branchBias,
                 traits: [],
@@ -402,7 +402,7 @@ export class BoardManager {
             }
 
             tile.kind = kind
-            tile.rotation = Math.floor(Math.random() * 4)
+            tile.rotation = Math.floor(Random.next() * 4)
         }
 
         const hasCurrentTile = Array.from(this.tileCatalog.values()).some((tile) => tile.feature === 'current')
@@ -757,38 +757,15 @@ export class BoardManager {
         ])
     }
 
+
     expireJewels(count: number): Array<{ position: Position, value: number }> {
-        const expired: Array<{ position: Position, value: number }> = []
-        const currentTileId = this.tileIds[this.robotPosition.row][this.robotPosition.col]
-        const candidates = Random.shuffle([...this.jewelTileIds].filter((tileId) => tileId !== currentTileId))
+        void count
 
-        for (const tileId of candidates.slice(0, count)) {
-            const position = this.findTilePosition(tileId)
-
-            if (position === null) {
-                continue
-            }
-
-            expired.push({
-                position,
-                value: this.jewelValues.get(tileId) ?? 1,
-            })
-            this.jewelTileIds.delete(tileId)
-            this.jewelValues.delete(tileId)
-        }
-
-        while (this.jewelTileIds.size < this.currentDifficulty.initialJewelCount) {
-            const beforeSize = this.jewelTileIds.size
-            this.refillCollectedJewel()
-
-            if (this.jewelTileIds.size === beforeSize) {
-                break
-            }
-        }
-
-        return expired
+        // 公平性優先:
+        // 先読みしていた宝石が時間で移動すると、失敗理由がRNGに見えやすい。
+        // 現行版では自動再配置を止め、宝石は取得時のみ補充する。
+        return []
     }
-
     findTilePosition(tileId: number): Position | null {
         for (let row = 0; row < this.tileIds.length; row += 1) {
             for (let col = 0; col < this.tileIds[row].length; col += 1) {

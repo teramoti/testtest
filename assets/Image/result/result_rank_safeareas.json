@@ -1,0 +1,98 @@
+{
+  "rank_01": {
+    "frame": "result_rank_01_frame.png",
+    "name": {
+      "x": 192,
+      "y": 26,
+      "w": 338,
+      "h": 52,
+      "align": "left"
+    },
+    "score": {
+      "x": 560,
+      "y": 26,
+      "w": 245,
+      "h": 52,
+      "align": "right"
+    },
+    "sub": {
+      "x": 192,
+      "y": 80,
+      "w": 620,
+      "h": 24,
+      "align": "left"
+    }
+  },
+  "rank_02": {
+    "frame": "result_rank_02_frame.png",
+    "name": {
+      "x": 192,
+      "y": 26,
+      "w": 338,
+      "h": 52,
+      "align": "left"
+    },
+    "score": {
+      "x": 560,
+      "y": 26,
+      "w": 245,
+      "h": 52,
+      "align": "right"
+    },
+    "sub": {
+      "x": 192,
+      "y": 80,
+      "w": 620,
+      "h": 24,
+      "align": "left"
+    }
+  },
+  "rank_03": {
+    "frame": "result_rank_03_frame.png",
+    "name": {
+      "x": 192,
+      "y": 26,
+      "w": 338,
+      "h": 52,
+      "align": "left"
+    },
+    "score": {
+      "x": 560,
+      "y": 26,
+      "w": 245,
+      "h": 52,
+      "align": "right"
+    },
+    "sub": {
+      "x": 192,
+      "y": 80,
+      "w": 620,
+      "h": 24,
+      "align": "left"
+    }
+  },
+  "rank_04": {
+    "frame": "result_rank_04_frame.png",
+    "name": {
+      "x": 192,
+      "y": 26,
+      "w": 338,
+      "h": 52,
+      "align": "left"
+    },
+    "score": {
+      "x": 560,
+      "y": 26,
+      "w": 245,
+      "h": 52,
+      "align": "right"
+    },
+    "sub": {
+      "x": 192,
+      "y": 80,
+      "w": 620,
+      "h": 24,
+      "align": "left"
+    }
+  }
+}

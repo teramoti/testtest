@@ -504,7 +504,7 @@ export class RobotGrid {
                     this.sync(snapshot, this.latestTimeLeft)
 
                     if (stepResult.collectedJewel) {
-                        this.emitJewelBurst(center.x, center.y)
+                        this.emitJewelBurst(center.x, center.y, stepResult.collectedJewelValue)
                     } else if (stepResult.triggeredCurrent) {
                         this.emitBubbleBurst(center.x, center.y, 0x7ae6f1, 8)
                     }
@@ -2140,9 +2140,9 @@ export class RobotGrid {
         })
     }
 
-    emitJewelBurst(x: number, y: number): void {
+    emitJewelBurst(x: number, y: number, value: number = 1): void {
         const pickup = this.scene.add.sprite(x, y, 'gem-pickup-0')
-        pickup.setScale(0.46)
+        pickup.setScale(value >= 5 ? 0.68 : value >= 3 ? 0.56 : 0.46)
         pickup.play('gem-pickup')
         pickup.once('animationcomplete', () => {
             pickup.destroy()
@@ -2179,6 +2179,35 @@ export class RobotGrid {
             ease: 'Sine.easeOut',
             onComplete: () => {
                 flash.destroy()
+            },
+        })
+
+        const valueColor = value >= 5
+            ? '#f2a7ff'
+            : value >= 3
+                ? '#9ed8ff'
+                : value >= 2
+                    ? '#a4fff5'
+                    : '#fff0a8'
+        const valueText = this.scene.add.text(x, y - 12, `+${value}`, {
+            fontFamily: UI_FONT,
+            fontSize: value >= 5 ? '48px' : value >= 3 ? '40px' : '34px',
+            color: valueColor,
+            fontStyle: 'bold',
+            stroke: '#09232b',
+            strokeThickness: 7,
+        }).setOrigin(0.5).setDepth(OVERLAY_DEPTH)
+
+        this.scene.tweens.add({
+            targets: valueText,
+            y: y - 76,
+            scaleX: value >= 5 ? 1.24 : 1.08,
+            scaleY: value >= 5 ? 1.24 : 1.08,
+            alpha: 0,
+            duration: value >= 5 ? 980 : 720,
+            ease: 'Back.easeOut',
+            onComplete: () => {
+                valueText.destroy()
             },
         })
     }

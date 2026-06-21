@@ -13,6 +13,7 @@ import { BoardManager } from '../systems/BoardManager.ts'
 import { ScoreManager } from '../systems/ScoreManager.ts'
 import { RobotGrid } from '../ui/RobotGrid.ts'
 import { GameConfig } from '../utils/GameConfig.ts'
+import { Random } from '../utils/Random.ts'
 
 type RobotGameResult = {
     results: Array<{ player: number, score: number, missCount: number, travelCount: number }>
@@ -21,6 +22,7 @@ type RobotGameResult = {
 type RobotGameOptions = {
     settings?: {
         playerCount?: number
+        difficulty?: string
         hudTarget?: EventTarget
     }
     hudTarget?: EventTarget | null
@@ -130,7 +132,21 @@ export class RobotSlideScene extends Phaser.Scene {
         })
     }
 
+    getFairBoardSeed(): number {
+        const difficulty = this.options.settings?.difficulty ?? 'normal'
+        const base = `${difficulty}:${GameConfig.BOARD_SIZE}:${GameConfig.BLANK_COUNT}`
+        let hash = 2166136261
+
+        for (const char of base) {
+            hash ^= char.charCodeAt(0)
+            hash = Math.imul(hash, 16777619)
+        }
+
+        return hash >>> 0
+    }
+
     startSession(): void {
+        Random.setSeed(this.getFairBoardSeed())
         this.timeLeft = GameConfig.SESSION_SECONDS
         this.sessionEnded = false
         this.roundLive = false
@@ -188,6 +204,11 @@ export class RobotSlideScene extends Phaser.Scene {
     startJewelExpireTimer(): void {
         if (this.jewelExpireEvent !== null) {
             this.jewelExpireEvent.remove()
+            this.jewelExpireEvent = null
+        }
+
+        if (GameConfig.JEWEL_EXPIRE_COUNT <= 0 || GameConfig.JEWEL_EXPIRE_SECONDS >= 900) {
+            return
         }
 
         this.jewelExpireEvent = this.time.addEvent({
@@ -211,6 +232,15 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         if (expiredJewels.length > 0) {
+            this.robotGrid.showCallout(
+                'STONE SHUFFLE!',
+                `${expiredJewels.length} STONES MOVED`,
+                0x9ffbff,
+                820,
+            )
+            this.audioDirector.playSpecial()
+            this.cameras.main.flash(180, 110, 230, 255, false)
+            this.cameras.main.shake(110, 0.0018)
             this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
         }
     }
@@ -302,9 +332,29 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         if (stepResult.collectedJewel) {
-            this.scoreManager.registerJewelCollect(afterSnapshot.routePreview, stepResult.collectedJewelValue)
+            const scoreSnapshot = this.scoreManager.registerJewelCollect(
+                afterSnapshot.routePreview,
+                stepResult.collectedJewelValue,
+            )
             this.audioDirector.playJewel(stepResult.collectedJewelValue)
-            this.cameras.main.shake(80, 0.0015)
+            this.cameras.main.shake(
+                stepResult.collectedJewelValue >= 5 ? 180 : 80,
+                stepResult.collectedJewelValue >= 5 ? 0.004 : 0.0015,
+            )
+
+            if (stepResult.collectedJewelValue >= 5) {
+                this.robotGrid.showCallout('JACKPOT!', '+5 STONE', 0xf1a8ff, 980)
+                this.cameras.main.flash(220, 238, 160, 255, false)
+            } else if (stepResult.collectedJewelValue >= 3) {
+                this.robotGrid.showCallout('BIG STONE!', `+${stepResult.collectedJewelValue}`, 0x9ed8ff, 720)
+            } else if (scoreSnapshot.jewelCount > 0 && scoreSnapshot.jewelCount % 3 === 0) {
+                this.robotGrid.showCallout(
+                    'STONE STREAK!',
+                    `${scoreSnapshot.jewelCount} COLLECTED`,
+                    0xffd48f,
+                    760,
+                )
+            }
         }
 
         this.robotGrid.renderRobotStep(afterSnapshot, stepResult, () => {
@@ -354,7 +404,7 @@ export class RobotSlideScene extends Phaser.Scene {
             return
         }
 
-        this.boardManager.resetBoard(this.getSessionProgress())
+        this.boardManager.resetBoard(0)
         this.retryPending = false
         this.roundLive = true
         this.busy = false
@@ -365,7 +415,7 @@ export class RobotSlideScene extends Phaser.Scene {
         const snapshot = this.boardManager.getSnapshot()
         this.robotGrid.sync(snapshot, this.timeLeft)
         this.startJewelExpireTimer()
-        this.robotGrid.showCallout('RECOVER', 'KEEP SCORING', 0xffd8a1, 620)
+        this.robotGrid.showCallout('RECOVER', 'SAME RULES', 0xffd8a1, 620)
         this.updateThreat(snapshot)
     }
 

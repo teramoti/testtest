@@ -967,3 +967,178 @@ body {
     0 4px 0 #714208,
     0 12px 18px rgba(0, 0, 0, 0.26);
 }
+
+
+
+/* =========================
+   CESA polish: Result scoreboards
+   - 1〜4位の順位票画像を背景に使う
+   - 名前・スコア・同点判定情報を安全領域へ重ねる
+========================= */
+.rankingBackground {
+  background-size: cover;
+  background-position: center;
+}
+
+.rankingScreen {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 24px 40px 34px !important;
+}
+
+.rankingHeader {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 8px !important;
+  text-shadow: 0 5px 12px rgba(0, 0, 0, 0.45);
+}
+
+.resultKicker {
+  margin: 0 0 2px;
+  color: #ffd274;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.rankingHeader .rankTitle {
+  color: #fff5cc;
+  font-size: 54px;
+  line-height: 1;
+  text-shadow:
+    0 4px 0 rgba(82, 48, 10, 0.72),
+    0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
+.rankingHeader .resultSubTitle {
+  margin-top: 8px;
+  color: #e8fbff;
+  font-weight: 800;
+}
+
+.scoreBoardList {
+  width: 900px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateY(-4px);
+}
+
+.scoreBoardItem {
+  position: relative;
+  width: 860px;
+  height: 118px;
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0;
+  transform: translateX(-26px) scale(0.985);
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.28));
+}
+
+.scoreBoardItem.animatedRankItem {
+  animation: scoreBoardEnter 520ms cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.scoreBoardItemFirst {
+  filter:
+    drop-shadow(0 0 14px rgba(255, 220, 94, 0.44))
+    drop-shadow(0 12px 16px rgba(0, 0, 0, 0.3));
+}
+
+.scoreBoardRankLabel {
+  position: absolute;
+  left: 50px;
+  top: 36px;
+  width: 94px;
+  text-align: center;
+  color: #fff7cf;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.06em;
+}
+
+.scoreBoardName {
+  position: absolute;
+  left: 206px;
+  top: 33px;
+  width: 300px;
+  color: #fff8df;
+  font-size: 30px;
+  font-weight: 900;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+.scoreBoardScore {
+  position: absolute;
+  right: 70px;
+  top: 31px;
+  width: 230px;
+  color: #ffe281;
+  font-size: 32px;
+  font-weight: 900;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5);
+}
+
+.scoreBoardSub {
+  position: absolute;
+  left: 206px;
+  top: 82px;
+  width: 600px;
+  color: rgba(255, 248, 217, 0.9);
+  font-size: 16px;
+  font-weight: 800;
+  text-align: left;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+}
+
+.rankingBackButton {
+  min-width: 180px;
+  height: 54px;
+  border-radius: 18px;
+  border: 2px solid rgba(255, 226, 129, 0.92);
+  background:
+    linear-gradient(180deg, rgba(31, 92, 103, 0.96), rgba(7, 42, 52, 0.98));
+  color: #fff4c5;
+  font-size: 20px;
+  font-weight: 900;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.07),
+    0 8px 0 rgba(70, 39, 7, 0.34);
+  cursor: pointer;
+}
+
+.rankingBackButton:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+@keyframes scoreBoardEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(-26px) scale(0.985);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateX(4px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}

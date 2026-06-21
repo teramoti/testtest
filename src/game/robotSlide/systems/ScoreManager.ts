@@ -134,6 +134,7 @@ export class ScoreManager {
 
     /**
      * registerJewelCollect: 螳晉浹蝗槫庶譎ゅ・蠕礼せ縺ｨ繧ｳ繝ｳ繝懃憾諷九ｒ譖ｴ譁ｰ縺吶ｋ縲・     * - 繧ｳ繝ｳ繝懊ｄ蛟咲紫繧定ｨ育ｮ励＠縲√せ繧ｳ繧｢縺ｸ蜿肴丐縺吶ｋ縲・     */
+
     registerJewelCollect(_routePreview: RoutePreview, jewelValue: number = 1): ScoreSnapshot {
         void _routePreview
         this.jewelCount += 1
@@ -142,19 +143,16 @@ export class ScoreManager {
         this.comboActive = this.comboCount >= 3
         this.comboRemainingMs = 0
 
-        const baseAward = Math.max(1, Math.trunc(jewelValue)) * GameConfig.JEWEL_SCORE
-        const efficiencyAward = this.getEfficiencyAward()
-        const streakBonus = Math.min(360, Math.floor(this.jewelsSinceCrash / 2) * 40)
-        const multiplier = this.getNoMissMultiplier() * this.getConnectionMultiplier()
-        const award = Math.max(1, Math.round((baseAward + efficiencyAward + streakBonus) * multiplier))
+        const award = Math.max(1, Math.trunc(jewelValue)) * GameConfig.JEWEL_SCORE
 
+        // CHAIN / EFF は参考情報。スコア計算には使わない。
         this.efficientCollectTotal += Math.max(0, 100 - this.slidesSinceLastJewel)
         this.slidesSinceLastJewel = 0
         this.score += award
         this.setLastEvent(
-            this.comboActive ? 'CHAIN JEWEL' : 'JEWEL',
+            this.comboActive ? 'CHAIN' : 'JEWEL',
             award,
-            `x${multiplier.toFixed(1)} / ${this.comboCount} CHAIN`,
+            `${this.comboCount} CHAIN / SCORE = JEWEL VALUE`,
         )
         this.notifyScoreUpdated()
         this.notifyComboChanged()

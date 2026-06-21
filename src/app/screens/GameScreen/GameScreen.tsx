@@ -85,7 +85,7 @@ function formatTimer(value: number) {
 }
 
 function formatScore(value: number | null) {
-  return Math.max(0, Math.floor(value ?? 0)).toString().padStart(6, '0')
+  return Math.max(0, Math.floor(value ?? 0)).toString()
 }
 
 function DigitSpriteText({
@@ -188,8 +188,6 @@ export default function GameScreen({ settings, onFinish }: Props) {
     }
   }, [difficulty, onFinish, settings])
 
-  const lastAward = hud.lastAward ?? 0
-
   return (
     <div className="gameScreenShell">
       <div className="gameScreenPanel">
@@ -217,29 +215,15 @@ export default function GameScreen({ settings, onFinish }: Props) {
             />
           </div>
 
-          <div className="hudMetricGrid">
+          <div className="hudMetricGrid hudMetricGridCompact">
             <div>
               <span>JEWEL</span>
               <strong>{hud.jewelCount ?? 0}</strong>
             </div>
             <div>
-              <span>CHAIN</span>
-              <strong>{hud.chainCount ?? 0}</strong>
-            </div>
-            <div>
               <span>MISS</span>
               <strong>{hud.missCount ?? 0}</strong>
             </div>
-            <div>
-              <span>EFF</span>
-              <strong>{hud.efficiency ?? 100}%</strong>
-            </div>
-          </div>
-
-          <div className={`hudEvent ${lastAward > 0 ? 'hudEventHot' : ''}`}>
-            <span>{hud.lastEventLabel ?? 'READY'}</span>
-            {lastAward > 0 && <strong>+{lastAward}</strong>}
-            {hud.lastAwardDetail && <small>{hud.lastAwardDetail}</small>}
           </div>
         </aside>
 
