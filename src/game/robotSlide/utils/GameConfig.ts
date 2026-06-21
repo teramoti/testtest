@@ -10,9 +10,9 @@ export class GameConfig {
     static ROBOT_SCALE = 1.15
     static BOARD_ORIGIN_X = 460
     static BOARD_ORIGIN_Y = 200
-    static ROBOT_STEP_MS = 790
-    static ROBOT_STEP_ACCELERATION_MS = 70
-    static MIN_ROBOT_STEP_MS = 320
+    static ROBOT_STEP_MS = 1380
+    static ROBOT_STEP_ACCELERATION_MS = 22
+    static MIN_ROBOT_STEP_MS = 820
     static BOOST_ROBOT_STEP_REDUCTION_MS = 240
     static MIN_BOOST_ROBOT_STEP_MS = 170
     static START_ROUTE_LENGTH = 10
@@ -25,8 +25,8 @@ export class GameConfig {
     static TARGET_SCORE = 18
     static SPEED_SCORE_STEP = 10
     static ROUTE_PREVIEW_LIMIT = 40
-    static WARNING_ROUTE_STEPS = 3
-    static DANGER_ROUTE_STEPS = 1
+    static WARNING_ROUTE_STEPS = 7
+    static DANGER_ROUTE_STEPS = 3
     static TIME_WARNING_SECONDS = 18
     static TIME_DANGER_SECONDS = 8
     static RETRY_DELAY_MS = 1000

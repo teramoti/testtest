@@ -47,6 +47,8 @@ type GameHudState = {
   lastEventLabel?: string
   lastAward?: number
   lastAwardDetail?: string
+  stopSkillReady?: boolean
+  stopSkillActive?: boolean
 }
 
 const scoreDigitImages: Record<string, string> = {
@@ -135,6 +137,8 @@ export default function GameScreen({ settings, onFinish }: Props) {
     lastEventLabel: 'READY',
     lastAward: 0,
     lastAwardDetail: '',
+    stopSkillReady: true,
+    stopSkillActive: false,
   })
   const ref = useRef<HTMLDivElement | null>(null)
   const hudTargetRef = useRef<EventTarget>(new EventTarget())
@@ -188,6 +192,10 @@ export default function GameScreen({ settings, onFinish }: Props) {
     }
   }, [difficulty, onFinish, settings])
 
+  const handleStopSkill = () => {
+    window.dispatchEvent(new Event('robot-slide-use-stop'))
+  }
+
   return (
     <div className="gameScreenShell">
       <div className="gameScreenPanel">
@@ -226,6 +234,16 @@ export default function GameScreen({ settings, onFinish }: Props) {
             </div>
           </div>
         </aside>
+
+        <button
+          className={`stopSkillButton ${hud.stopSkillActive ? 'stopSkillButtonActive' : ''}`}
+          disabled={!hud.stopSkillReady || hud.stopSkillActive}
+          type="button"
+          onClick={handleStopSkill}
+        >
+          <span>STOP</span>
+          <strong>{hud.stopSkillActive ? 'WAIT' : hud.stopSkillReady ? '1 USE' : 'USED'}</strong>
+        </button>
 
         <div
           ref={ref}

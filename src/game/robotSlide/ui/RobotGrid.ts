@@ -1353,8 +1353,8 @@ export class RobotGrid {
             tileView.tileSprite.clearTint()
         }
 
-        this.drawTilePath(tileView.pathGlow, tileView.tile, pathGlowColor, isConnected ? 16 : 8, isConnected ? 0.26 : 0.04)
-        this.drawTilePath(tileView.pathBase, tileView.tile, pathColor, 8, isConnected || isCurrent ? 0.52 : 0.18)
+        this.drawTilePath(tileView.pathGlow, tileView.tile, pathGlowColor, isConnected ? 22 : 8, isConnected ? 0.36 : 0.04)
+        this.drawTilePath(tileView.pathBase, tileView.tile, pathColor, isConnected ? 10 : 8, isConnected || isCurrent ? 0.72 : 0.18)
         this.drawSpecialAura(tileView.specialAura, tileView.tile, isConnected || isCurrent)
         this.setJewelValue(tileView.jewel, jewelValue)
         tileView.jewel.setVisible(hasJewel)
@@ -1425,6 +1425,7 @@ export class RobotGrid {
     refreshRouteLine(snapshot: BoardSnapshot): void {
         this.boardRouteGlow.clear()
         this.boardRouteLine.clear()
+        this.routeImpact.clear()
 
         const points = [this.getCellCenter(snapshot.robotPosition)]
 
@@ -1433,12 +1434,15 @@ export class RobotGrid {
         }
 
         if (points.length <= 1) {
+            this.drawBlockedMarker(snapshot)
             return
         }
 
         const colors = this.getRouteColors(snapshot.routePreview.riskLevel)
-        this.boardRouteGlow.lineStyle(22, colors.glow, 0.22)
-        this.boardRouteLine.lineStyle(8, colors.core, 0.98)
+
+        // 太い帯で「今ロボットが進む道」を見せる。判断力より反応しやすさを優先。
+        this.boardRouteGlow.lineStyle(34, colors.glow, 0.30)
+        this.boardRouteLine.lineStyle(12, colors.core, 1)
 
         this.boardRouteGlow.beginPath()
         this.boardRouteGlow.moveTo(points[0].x, points[0].y)
@@ -1453,13 +1457,41 @@ export class RobotGrid {
         this.boardRouteGlow.strokePath()
         this.boardRouteLine.strokePath()
 
-        for (const point of points) {
-            this.boardRouteGlow.fillStyle(colors.glow, 0.16)
-            this.boardRouteGlow.fillCircle(point.x, point.y, 10)
-            this.boardRouteLine.fillStyle(colors.core, 0.95)
-            this.boardRouteLine.fillCircle(point.x, point.y, 4)
+        for (const [index, point] of points.entries()) {
+            const isNearFuture = index > 0 && index <= 4
+            this.boardRouteGlow.fillStyle(colors.glow, isNearFuture ? 0.32 : 0.16)
+            this.boardRouteGlow.fillCircle(point.x, point.y, isNearFuture ? 16 : 10)
+            this.boardRouteLine.fillStyle(colors.core, 0.98)
+            this.boardRouteLine.fillCircle(point.x, point.y, isNearFuture ? 7 : 4)
+
+            if (isNearFuture) {
+                this.routeImpact.lineStyle(2, 0x072a36, 0.88)
+                this.routeImpact.fillStyle(0xfff2c0, 0.92)
+                this.routeImpact.fillCircle(point.x + 16, point.y - 16, 11)
+                this.routeImpact.strokeCircle(point.x + 16, point.y - 16, 11)
+            }
         }
+
+        this.drawBlockedMarker(snapshot)
     }
+
+    drawBlockedMarker(snapshot: BoardSnapshot): void {
+        if (snapshot.routePreview.blockedPosition === null) {
+            return
+        }
+
+        const center = this.getCellCenter(snapshot.routePreview.blockedPosition)
+        this.routeImpact.lineStyle(7, 0xff6f5f, 0.95)
+        this.routeImpact.beginPath()
+        this.routeImpact.moveTo(center.x - 18, center.y - 18)
+        this.routeImpact.lineTo(center.x + 18, center.y + 18)
+        this.routeImpact.moveTo(center.x + 18, center.y - 18)
+        this.routeImpact.lineTo(center.x - 18, center.y + 18)
+        this.routeImpact.strokePath()
+        this.routeImpact.fillStyle(0xffd5cd, 0.2)
+        this.routeImpact.fillCircle(center.x, center.y, 28)
+    }
+
 
     refreshThreatFrame(snapshot: BoardSnapshot): void {
         this.boardThreatFrame.clear()
@@ -1501,16 +1533,16 @@ export class RobotGrid {
             this.routeText.setColor('#c8ffd8')
             this.routeDetailText.setText(
                 preview.nextJewelDistance === null
-                    ? '繝ｫ繝ｼ繝玲・遶倶ｸｭ'
-                    : `螳晉浹縺ｾ縺ｧ ${preview.nextJewelDistance} 繝槭せ`,
+                    ? 'SAFE LOOP'
+                    : `JEWEL ${preview.nextJewelDistance} STEP`,
             )
             return
         }
 
         if (preview.riskLevel === 'critical') {
-            this.routeText.setText('BREAK NOW')
+            this.routeText.setText('FIX NOW')
             this.routeText.setColor('#ffd7cf')
-            this.routeDetailText.setText('Next step is blocked')
+            this.routeDetailText.setText('NEXT STEP BLOCKED')
             return
         }
 
@@ -1519,8 +1551,8 @@ export class RobotGrid {
             this.routeText.setColor('#ffd5cd')
             this.routeDetailText.setText(
                 preview.nextJewelDistance === null
-                    ? 'Route is short'
-                    : `螳晉浹縺ｾ縺ｧ ${preview.nextJewelDistance} 繝槭せ`,
+                    ? 'ROUTE TOO SHORT'
+                    : `JEWEL ${preview.nextJewelDistance} STEP`,
             )
             return
         }
@@ -1530,8 +1562,8 @@ export class RobotGrid {
             this.routeText.setColor('#fff0cb')
             this.routeDetailText.setText(
                 preview.nextJewelDistance === null
-                    ? 'Read the next branch'
-                    : `螳晉浹縺ｾ縺ｧ ${preview.nextJewelDistance} 繝槭せ`,
+                    ? 'MAKE LONGER PATH'
+                    : `JEWEL ${preview.nextJewelDistance} STEP`,
             )
             return
         }
@@ -1540,10 +1572,11 @@ export class RobotGrid {
         this.routeText.setColor('#dcffff')
         this.routeDetailText.setText(
             preview.nextJewelDistance === null
-                ? 'No connected jewel yet'
-                : `螳晉浹縺ｾ縺ｧ ${preview.nextJewelDistance} 繝槭せ`,
+                ? 'FIND A JEWEL PATH'
+                : `JEWEL ${preview.nextJewelDistance} STEP`,
         )
     }
+
 
     refreshWarningBanner(snapshot: BoardSnapshot): void {
         const preview = snapshot.routePreview

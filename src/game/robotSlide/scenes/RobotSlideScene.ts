@@ -56,6 +56,10 @@ export class RobotSlideScene extends Phaser.Scene {
     queuedTilePositions: Position[]
     latestBattleSnapshot: BattleSnapshot | null
     battleAnnouncementSignature: string
+    stopSkillReady: boolean
+    stopSkillActive: boolean
+    stopSkillEvent?: Phaser.Time.TimerEvent | null
+    stopSkillWindowHandler: (() => void) | null
 
     constructor() {
         super('RobotSlideScene')
@@ -73,10 +77,18 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
+        this.stopSkillReady = true
+        this.stopSkillActive = false
+        this.stopSkillEvent?.remove()
+        this.stopSkillEvent = null
         this.speedLevel = 0
         this.queuedTilePositions = []
         this.latestBattleSnapshot = null
         this.battleAnnouncementSignature = ''
+        this.stopSkillReady = true
+        this.stopSkillActive = false
+        this.stopSkillEvent = null
+        this.stopSkillWindowHandler = null
     }
 
     init(options: RobotGameOptions = {}): void {
@@ -94,9 +106,26 @@ export class RobotSlideScene extends Phaser.Scene {
         this.robotGrid = new RobotGrid(this, this.boardManager.getSnapshot())
         this.audioDirector = new AudioDirector(this)
         this.connectEvents()
+        this.stopSkillWindowHandler = () => {
+            this.activateStopSkill()
+        }
+        window.addEventListener('robot-slide-use-stop', this.stopSkillWindowHandler)
+
+        this.input.keyboard?.on('keydown-SPACE', () => {
+            this.activateStopSkill()
+        })
+
         this.events.once('shutdown', () => {
             this.jewelExpireEvent?.remove()
             this.jewelExpireEvent = null
+            this.stopSkillEvent?.remove()
+            this.stopSkillEvent = null
+
+            if (this.stopSkillWindowHandler !== null) {
+                window.removeEventListener('robot-slide-use-stop', this.stopSkillWindowHandler)
+                this.stopSkillWindowHandler = null
+            }
+
             this.audioDirector.destroy()
         })
         this.startSession()
@@ -153,6 +182,10 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
+        this.stopSkillReady = true
+        this.stopSkillActive = false
+        this.stopSkillEvent?.remove()
+        this.stopSkillEvent = null
         this.speedLevel = 0
         this.queuedTilePositions = []
         this.battleAnnouncementSignature = ''
@@ -188,6 +221,10 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     startRobotTimer(): void {
+        if (this.stopSkillActive) {
+            return
+        }
+
         if (this.robotEvent !== null) {
             this.robotEvent.remove()
         }
@@ -419,6 +456,34 @@ export class RobotSlideScene extends Phaser.Scene {
         this.updateThreat(snapshot)
     }
 
+    activateStopSkill(): void {
+        if (this.sessionEnded || this.retryPending || !this.roundLive || !this.stopSkillReady || this.stopSkillActive) {
+            return
+        }
+
+        this.stopSkillReady = false
+        this.stopSkillActive = true
+
+        if (this.robotEvent !== null) {
+            this.robotEvent.remove()
+            this.robotEvent = null
+        }
+
+        this.robotGrid.showCallout('STOP!', '2.2s THINK TIME', 0xa9f6ff, 900)
+        this.audioDirector.playSpecial()
+        this.emitHud()
+
+        this.stopSkillEvent = this.time.addEvent({
+            delay: 2200,
+            callback: () => {
+                this.stopSkillActive = false
+                this.stopSkillEvent = null
+                this.startRobotTimer()
+                this.emitHud()
+            },
+        })
+    }
+
     startBoost(): void {
         if (this.sessionEnded || this.retryPending || this.boosting || !this.roundLive) {
             return
@@ -467,7 +532,7 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     restartRobotTimerIfRunning(): void {
-        if (this.sessionEnded || this.retryPending || this.robotEvent === null) {
+        if (this.sessionEnded || this.retryPending || this.stopSkillActive || this.robotEvent === null) {
             return
         }
 
@@ -500,6 +565,9 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
+        this.stopSkillActive = false
+        this.stopSkillEvent?.remove()
+        this.stopSkillEvent = null
         this.queuedTilePositions = []
         this.robotGrid.hideRetryNotice()
         this.robotGrid.setInteractionEnabled(false)
@@ -561,6 +629,8 @@ export class RobotSlideScene extends Phaser.Scene {
                 lastEventLabel: scoreSnapshot.lastEventLabel,
                 lastAward: scoreSnapshot.lastAward,
                 lastAwardDetail: scoreSnapshot.lastAwardDetail,
+                stopSkillReady: this.stopSkillReady,
+                stopSkillActive: this.stopSkillActive,
             },
         }))
     }

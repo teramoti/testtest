@@ -1,0 +1,40 @@
+Gameplay Polish v4
+
+目的:
+- 判断力だけに寄りすぎていたゲーム性を、反応・救済・リスク管理へ寄せた。
+- 「どれを動かせばいいか分からないまま失敗」を減らし、「危ないからSTOPを切る」に変える。
+
+追加・修正:
+1. 1回だけ使える STOP スキルを追加
+   - Game画面左下に STOP ボタンを追加
+   - クリックまたは Space キーで発動
+   - ロボットを約2.2秒停止
+   - 使用後は USED 表示になり再使用不可
+   - 失敗寸前に立て直すための救済要素
+
+2. ルート予告を強化
+   - 進行ルート線を太く・明るくした
+   - 直近4ステップを強調表示
+   - ブロック位置に赤い×マーカーを表示
+   - ルートHUDの文字化けしていた説明を英語の短文へ置換
+
+3. 難易度を緩和
+   - Easy/Normalのロボット速度を遅めに調整
+   - 加速量を控えめに調整
+   - 危険表示を早めに出すよう warning/danger 閾値を緩和
+   - Hardも最低速度を少し緩めた
+
+維持:
+- スコアは宝石値そのまま
+- 時間経過で宝石は勝手に動かない
+- クラッシュ後に内部難易度が勝手に上がらない
+- Resultスコアボードはv3のまま維持
+
+確認:
+- TypeScript check OK:
+  node ./node_modules/typescript/bin/tsc -b --pretty false
+
+未確認:
+- npm run build
+  元ZIP由来 node_modules に Linux 用 Rolldown native binding が無いため、この環境では失敗。
+  手元では npm install 後に npm run dev / npm run build を確認すること。
