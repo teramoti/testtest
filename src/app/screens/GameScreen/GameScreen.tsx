@@ -49,6 +49,11 @@ type GameHudState = {
   lastAwardDetail?: string
   stopSkillReady?: boolean
   stopSkillActive?: boolean
+  missionLabel?: string
+  missionCount?: number
+  missionTarget?: number
+  missionTimeLeft?: number
+  feverActive?: boolean
 }
 
 const scoreDigitImages: Record<string, string> = {
@@ -139,6 +144,11 @@ export default function GameScreen({ settings, onFinish }: Props) {
     lastAwardDetail: '',
     stopSkillReady: true,
     stopSkillActive: false,
+    missionLabel: 'GET 3 JEWELS',
+    missionCount: 0,
+    missionTarget: 3,
+    missionTimeLeft: 15,
+    feverActive: false,
   })
   const ref = useRef<HTMLDivElement | null>(null)
   const hudTargetRef = useRef<EventTarget>(new EventTarget())
@@ -234,6 +244,14 @@ export default function GameScreen({ settings, onFinish }: Props) {
             </div>
           </div>
         </aside>
+
+          <div className={`missionCard ${hud.feverActive ? 'missionCardFever' : ''}`}>
+            <span>{hud.feverActive ? 'FINAL FEVER' : hud.missionLabel ?? 'MISSION'}</span>
+            <strong>
+              {hud.missionCount ?? 0}/{hud.missionTarget ?? 3}
+            </strong>
+            <small>{Math.max(0, Math.ceil(hud.missionTimeLeft ?? 0))}s</small>
+          </div>
 
         <button
           className={`stopSkillButton ${hud.stopSkillActive ? 'stopSkillButtonActive' : ''}`}

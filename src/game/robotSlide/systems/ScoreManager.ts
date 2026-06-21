@@ -159,6 +159,19 @@ export class ScoreManager {
         return this.getSnapshot()
     }
 
+
+    registerBonus(label: string, award: number, detail: string = ''): ScoreSnapshot {
+        const safeAward = Math.max(0, Math.trunc(award))
+
+        if (safeAward > 0) {
+            this.score += safeAward
+        }
+
+        this.setLastEvent(label, safeAward, detail)
+        this.notifyScoreUpdated()
+        return this.getSnapshot()
+    }
+
     /**
      * registerCrash: 繧ｯ繝ｩ繝・す繝･逋ｺ逕滓凾縺ｮ迥ｶ諷区峩譁ｰ・医さ繝ｳ繝懆ｧ｣髯､縲√き繧ｦ繝ｳ繝亥｢怜刈遲会ｼ峨ｒ陦後≧縲・     */
     registerCrash(): ScoreSnapshot {

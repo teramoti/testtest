@@ -60,6 +60,12 @@ export class RobotSlideScene extends Phaser.Scene {
     stopSkillActive: boolean
     stopSkillEvent?: Phaser.Time.TimerEvent | null
     stopSkillWindowHandler: (() => void) | null
+    missionTarget: number
+    missionCount: number
+    missionEndTime: number
+    missionReward: number
+    missionLabel: string
+    feverTriggered: boolean
 
     constructor() {
         super('RobotSlideScene')
@@ -81,6 +87,8 @@ export class RobotSlideScene extends Phaser.Scene {
         this.stopSkillActive = false
         this.stopSkillEvent?.remove()
         this.stopSkillEvent = null
+        this.startMission()
+        this.feverTriggered = false
         this.speedLevel = 0
         this.queuedTilePositions = []
         this.latestBattleSnapshot = null
@@ -89,6 +97,12 @@ export class RobotSlideScene extends Phaser.Scene {
         this.stopSkillActive = false
         this.stopSkillEvent = null
         this.stopSkillWindowHandler = null
+        this.missionTarget = 3
+        this.missionCount = 0
+        this.missionEndTime = 45
+        this.missionReward = 5
+        this.missionLabel = 'GET 3 JEWELS'
+        this.feverTriggered = false
     }
 
     init(options: RobotGameOptions = {}): void {
@@ -124,6 +138,12 @@ export class RobotSlideScene extends Phaser.Scene {
             if (this.stopSkillWindowHandler !== null) {
                 window.removeEventListener('robot-slide-use-stop', this.stopSkillWindowHandler)
                 this.stopSkillWindowHandler = null
+        this.missionTarget = 3
+        this.missionCount = 0
+        this.missionEndTime = 45
+        this.missionReward = 5
+        this.missionLabel = 'GET 3 JEWELS'
+        this.feverTriggered = false
             }
 
             this.audioDirector.destroy()
@@ -186,6 +206,8 @@ export class RobotSlideScene extends Phaser.Scene {
         this.stopSkillActive = false
         this.stopSkillEvent?.remove()
         this.stopSkillEvent = null
+        this.startMission()
+        this.feverTriggered = false
         this.speedLevel = 0
         this.queuedTilePositions = []
         this.battleAnnouncementSignature = ''
@@ -380,10 +402,10 @@ export class RobotSlideScene extends Phaser.Scene {
             )
 
             if (stepResult.collectedJewelValue >= 5) {
-                this.robotGrid.showCallout('JACKPOT!', '+5 STONE', 0xf1a8ff, 980)
+                this.robotGrid.showCallout('POWER GEM!', '+5 / STOP READY', 0xf1a8ff, 980)
                 this.cameras.main.flash(220, 238, 160, 255, false)
             } else if (stepResult.collectedJewelValue >= 3) {
-                this.robotGrid.showCallout('BIG STONE!', `+${stepResult.collectedJewelValue}`, 0x9ed8ff, 720)
+                this.robotGrid.showCallout('TIME GEM!', `+${stepResult.collectedJewelValue} / +2 SEC`, 0x9ed8ff, 720)
             } else if (scoreSnapshot.jewelCount > 0 && scoreSnapshot.jewelCount % 3 === 0) {
                 this.robotGrid.showCallout(
                     'STONE STREAK!',
@@ -392,6 +414,8 @@ export class RobotSlideScene extends Phaser.Scene {
                     760,
                 )
             }
+
+            this.handleJewelEffect(stepResult.collectedJewelValue)
         }
 
         this.robotGrid.renderRobotStep(afterSnapshot, stepResult, () => {
@@ -456,6 +480,77 @@ export class RobotSlideScene extends Phaser.Scene {
         this.updateThreat(snapshot)
     }
 
+    startMission(): void {
+        const remaining = Math.max(1, this.timeLeft)
+        this.missionTarget = remaining <= 18 ? 2 : 3
+        this.missionCount = 0
+        this.missionReward = remaining <= 18 ? 4 : 5
+        this.missionEndTime = Math.max(0, this.timeLeft - 15)
+        this.missionLabel = `GET ${this.missionTarget} JEWELS`
+    }
+
+    getMissionTimeLeft(): number {
+        return Math.max(0, this.timeLeft - this.missionEndTime)
+    }
+
+    completeMission(): void {
+        this.scoreManager.registerBonus('MISSION CLEAR', this.missionReward, `+${this.missionReward} / STOP READY`)
+        this.stopSkillReady = true
+        this.stopSkillActive = false
+        this.robotGrid.showCallout('MISSION CLEAR!', `+${this.missionReward} / STOP READY`, 0xffe38f, 980)
+        this.audioDirector.playSpecial()
+        this.startMission()
+        this.emitHud()
+    }
+
+    handleMissionTick(): void {
+        if (this.missionCount >= this.missionTarget) {
+            this.completeMission()
+            return
+        }
+
+        if (this.getMissionTimeLeft() <= 0) {
+            this.robotGrid.showCallout('NEW MISSION', 'TRY AGAIN', 0x9ed8ff, 620)
+            this.startMission()
+            this.emitHud()
+        }
+    }
+
+    handleJewelEffect(jewelValue: number): void {
+        this.missionCount += 1
+
+        if (jewelValue >= 5) {
+            this.stopSkillReady = true
+            this.robotGrid.showCallout('POWER GEM!', 'STOP READY', 0xf1a8ff, 900)
+            this.audioDirector.playSpecial()
+        } else if (jewelValue >= 3) {
+            this.timeLeft = Math.min(GameConfig.SESSION_SECONDS, this.timeLeft + 2)
+            this.robotGrid.showCallout('TIME GEM!', '+2 SEC', 0x9ed8ff, 760)
+        } else if (this.missionCount >= this.missionTarget) {
+            this.completeMission()
+            return
+        }
+
+        if (this.missionCount >= this.missionTarget) {
+            this.completeMission()
+        } else {
+            this.emitHud()
+        }
+    }
+
+    handleFeverCheck(): void {
+        if (this.feverTriggered || this.timeLeft > 10) {
+            return
+        }
+
+        this.feverTriggered = true
+        this.stopSkillReady = true
+        this.robotGrid.showCallout('FINAL FEVER!', 'STOP READY', 0xffd48f, 1040)
+        this.cameras.main.flash(260, 255, 218, 130, false)
+        this.audioDirector.playSpecial()
+        this.emitHud()
+    }
+
     activateStopSkill(): void {
         if (this.sessionEnded || this.retryPending || !this.roundLive || !this.stopSkillReady || this.stopSkillActive) {
             return
@@ -514,6 +609,8 @@ export class RobotSlideScene extends Phaser.Scene {
         const snapshot = this.boardManager.getSnapshot()
         this.applyBattleSnapshot(this.battleManager.advanceClock(this.timeLeft, this.scoreManager.getSnapshot()))
         this.robotGrid.sync(snapshot, this.timeLeft)
+        this.handleMissionTick()
+        this.handleFeverCheck()
         this.emitHud()
         this.updateThreat(snapshot)
 
@@ -631,6 +728,11 @@ export class RobotSlideScene extends Phaser.Scene {
                 lastAwardDetail: scoreSnapshot.lastAwardDetail,
                 stopSkillReady: this.stopSkillReady,
                 stopSkillActive: this.stopSkillActive,
+                missionLabel: this.missionLabel,
+                missionCount: this.missionCount,
+                missionTarget: this.missionTarget,
+                missionTimeLeft: this.getMissionTimeLeft(),
+                feverActive: this.feverTriggered && this.timeLeft <= 10,
             },
         }))
     }
