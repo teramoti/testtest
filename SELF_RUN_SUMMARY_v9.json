@@ -1,0 +1,30 @@
+{
+  "runs": 8,
+  "ok": true,
+  "score": [
+    33,
+    68,
+    52.25
+  ],
+  "jewels": [
+    7,
+    15,
+    12
+  ],
+  "crashes": [
+    7,
+    11,
+    8.88
+  ],
+  "missionClears": [
+    2,
+    5,
+    3.62
+  ],
+  "luckyAssistUses": [
+    3,
+    3,
+    3
+  ],
+  "fever_all": true
+}

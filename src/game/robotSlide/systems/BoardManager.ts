@@ -433,9 +433,9 @@ export class BoardManager {
                 ],
                 currentFeatureChance: 0.22,
                 allowStartingLoop: true,
-                targetRouteLength: 16,
-                initialJewelCount: 14,
-                priorityRouteJewelCount: 5,
+                targetRouteLength: 20,
+                initialJewelCount: 16,
+                priorityRouteJewelCount: 8,
             }
         }
 
@@ -451,10 +451,10 @@ export class BoardManager {
                     { item: 'branch', weight: 14 },
                 ],
                 currentFeatureChance: 0.16,
-                allowStartingLoop: false,
-                targetRouteLength: 14,
-                initialJewelCount: 13,
-                priorityRouteJewelCount: 4,
+                allowStartingLoop: true,
+                targetRouteLength: 18,
+                initialJewelCount: 15,
+                priorityRouteJewelCount: 7,
             }
         }
 
@@ -469,10 +469,10 @@ export class BoardManager {
                 { item: 'branch', weight: 10 },
             ],
             currentFeatureChance: 0.12,
-            allowStartingLoop: false,
-            targetRouteLength: 12,
-            initialJewelCount: 12,
-            priorityRouteJewelCount: 4,
+            allowStartingLoop: true,
+            targetRouteLength: 16,
+            initialJewelCount: 14,
+            priorityRouteJewelCount: 7,
         }
     }
 
@@ -716,24 +716,14 @@ export class BoardManager {
             return
         }
 
-        const preview = this.buildRoutePreview(this.robotPosition, this.robotDirection)
-        const routeTileIds = new Set(this.traceReachableRouteTileIds())
+        // Fun v9: refill on the reachable route first so collection happens more often.
+        const routeTileIds = this.traceReachableRouteTileIds(1)
         const eligibleTileIds = Random.shuffle(this.listJewelEligibleTileIds())
-        const offRouteTileIds = eligibleTileIds.filter((tileId) => !routeTileIds.has(tileId))
-        const candidateTileId = offRouteTileIds[0]
+        const routeCandidateId = routeTileIds.find((tileId) => eligibleTileIds.includes(tileId))
 
-        if (candidateTileId !== undefined) {
-            this.addJewel(candidateTileId)
+        if (routeCandidateId !== undefined) {
+            this.addJewel(routeCandidateId)
             return
-        }
-
-        if (!preview.loopDetected) {
-            const routeCandidateId = eligibleTileIds.find((tileId) => routeTileIds.has(tileId))
-
-            if (routeCandidateId !== undefined) {
-                this.addJewel(routeCandidateId)
-                return
-            }
         }
 
         const fallbackTileId = eligibleTileIds[0]
@@ -757,6 +747,119 @@ export class BoardManager {
         ])
     }
 
+    upgradeRandomJewels(count: number, value: number): void {
+        const currentTileId = this.tileIds[this.robotPosition.row][this.robotPosition.col]
+        const candidates = Random.shuffle([...this.jewelTileIds].filter((tileId) => tileId !== currentTileId))
+        let upgraded = 0
+
+        for (const tileId of candidates) {
+            if (upgraded >= count) {
+                return
+            }
+
+            this.jewelValues.set(tileId, value)
+            upgraded += 1
+        }
+    }
+
+    upgradeRouteJewels(count: number, value: number): void {
+        const routeTileIds = this.traceReachableRouteTileIds(1)
+        let upgraded = 0
+
+        for (const tileId of routeTileIds) {
+            if (upgraded >= count) {
+                return
+            }
+
+            if (!this.jewelTileIds.has(tileId)) {
+                this.jewelTileIds.add(tileId)
+            }
+
+            this.jewelValues.set(tileId, value)
+            upgraded += 1
+        }
+    }
+
+    ensureRouteJewels(count: number, value: number = 3): void {
+        const routeTileIds = this.traceReachableRouteTileIds(1)
+        let placed = 0
+
+        for (const tileId of routeTileIds) {
+            if (placed >= count) {
+                return
+            }
+
+            if (this.jewelTileIds.has(tileId)) {
+                placed += 1
+                continue
+            }
+
+            this.jewelTileIds.add(tileId)
+            this.jewelValues.set(tileId, value)
+            placed += 1
+        }
+    }
+
+
+
+    evaluateMove(position: Position): { moved: boolean, safeStepCount: number, nextJewelDistance: number | null, riskPenalty: number } {
+        const savedTileIds = this.tileIds.map((row) => [...row])
+        const savedBlankPositions = this.blankPositions.map((blank) => ({ ...blank }))
+        const savedBlankPosition = { ...this.blankPosition }
+        const savedRobotPosition = { ...this.robotPosition }
+        const savedRobotDirection = this.robotDirection
+        const savedRobotAlive = this.robotAlive
+
+        const result = this.moveTile(position)
+        const preview = this.buildRoutePreview(this.robotPosition, this.robotDirection)
+        const riskPenalty = preview.riskLevel === 'critical'
+            ? 40
+            : preview.riskLevel === 'danger'
+                ? 20
+                : preview.riskLevel === 'warning'
+                    ? 8
+                    : 0
+
+        this.tileIds = savedTileIds
+        this.blankPositions = savedBlankPositions
+        this.blankPosition = savedBlankPosition
+        this.robotPosition = savedRobotPosition
+        this.robotDirection = savedRobotDirection
+        this.robotAlive = savedRobotAlive
+
+        return {
+            moved: result.moved,
+            safeStepCount: preview.safeStepCount,
+            nextJewelDistance: preview.nextJewelDistance,
+            riskPenalty,
+        }
+    }
+
+    getBestAssistMove(): Position | null {
+        let best: { position: Position, value: number } | null = null
+
+        for (const position of this.listMovablePositions()) {
+            const evaluation = this.evaluateMove(position)
+
+            if (!evaluation.moved) {
+                continue
+            }
+
+            const jewelBonus = evaluation.nextJewelDistance === null
+                ? 0
+                : Math.max(0, 12 - evaluation.nextJewelDistance) * 3
+            const value = evaluation.safeStepCount * 6 + jewelBonus - evaluation.riskPenalty
+
+            if (best === null || value > best.value) {
+                best = {
+                    position,
+                    value,
+                }
+            }
+        }
+
+        return best?.position ?? null
+    }
 
     expireJewels(count: number): Array<{ position: Position, value: number }> {
         void count

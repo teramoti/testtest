@@ -682,6 +682,34 @@ export class RobotGrid {
         this.retryNotice.panel.setVisible(false)
     }
 
+    showAssistHint(position: Position, label: string = 'MOVE THIS'): void {
+        const center = this.getCellCenter(position)
+        this.routeImpact.lineStyle(7, 0xffe281, 0.96)
+        this.routeImpact.strokeCircle(center.x, center.y, GameConfig.TILE_SIZE * 0.52)
+        this.routeImpact.lineStyle(3, 0xffffff, 0.82)
+        this.routeImpact.strokeCircle(center.x, center.y, GameConfig.TILE_SIZE * 0.64)
+
+        const text = this.scene.add.text(center.x, center.y - GameConfig.TILE_SIZE * 0.72, label, {
+            fontFamily: UI_FONT,
+            fontSize: '18px',
+            fontStyle: '900',
+            color: '#fff4c5',
+            stroke: '#072a36',
+            strokeThickness: 5,
+        }).setOrigin(0.5).setDepth(OVERLAY_DEPTH + 1)
+
+        this.scene.tweens.add({
+            targets: text,
+            y: text.y - 8,
+            alpha: 0,
+            duration: 1100,
+            ease: 'Sine.easeOut',
+            onComplete: () => {
+                text.destroy()
+            },
+        })
+    }
+
     showCallout(title: string, body: string, accentColor: number = 0x8fe5eb, durationMs: number = 760): void {
         this.calloutSerial += 1
         const calloutSerial = this.calloutSerial
@@ -1470,6 +1498,18 @@ export class RobotGrid {
                 this.routeImpact.fillCircle(point.x + 16, point.y - 16, 11)
                 this.routeImpact.strokeCircle(point.x + 16, point.y - 16, 11)
             }
+        }
+
+        const routeJewelSegment = snapshot.routePreview.segments.find((segment) => snapshot.jewelTileIds.includes(segment.tileId))
+
+        if (routeJewelSegment !== undefined) {
+            const jewelCenter = this.getCellCenter(routeJewelSegment.position)
+            this.routeImpact.lineStyle(4, 0xffe281, 0.95)
+            this.routeImpact.fillStyle(0xffe281, 0.18)
+            this.routeImpact.fillCircle(jewelCenter.x, jewelCenter.y, 30)
+            this.routeImpact.strokeCircle(jewelCenter.x, jewelCenter.y, 30)
+            this.routeImpact.lineStyle(2, 0xffffff, 0.72)
+            this.routeImpact.strokeCircle(jewelCenter.x, jewelCenter.y, 38)
         }
 
         this.drawBlockedMarker(snapshot)

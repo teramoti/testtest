@@ -49,10 +49,13 @@ type GameHudState = {
   lastAwardDetail?: string
   stopSkillReady?: boolean
   stopSkillActive?: boolean
+  hintSkillReady?: boolean
+  luckyAssistCharges?: number
   missionLabel?: string
   missionCount?: number
   missionTarget?: number
   missionTimeLeft?: number
+  missionKind?: 'jewel' | 'route' | 'streak'
   feverActive?: boolean
 }
 
@@ -144,10 +147,13 @@ export default function GameScreen({ settings, onFinish }: Props) {
     lastAwardDetail: '',
     stopSkillReady: true,
     stopSkillActive: false,
+    hintSkillReady: true,
+    luckyAssistCharges: 8,
     missionLabel: 'GET 3 JEWELS',
     missionCount: 0,
     missionTarget: 3,
     missionTimeLeft: 15,
+    missionKind: 'jewel',
     feverActive: false,
   })
   const ref = useRef<HTMLDivElement | null>(null)
@@ -206,6 +212,10 @@ export default function GameScreen({ settings, onFinish }: Props) {
     window.dispatchEvent(new Event('robot-slide-use-stop'))
   }
 
+  const handleHintSkill = () => {
+    window.dispatchEvent(new Event('robot-slide-use-hint'))
+  }
+
   return (
     <div className="gameScreenShell">
       <div className="gameScreenPanel">
@@ -242,6 +252,10 @@ export default function GameScreen({ settings, onFinish }: Props) {
               <span>MISS</span>
               <strong>{hud.missCount ?? 0}</strong>
             </div>
+            <div>
+              <span>LUCKY</span>
+              <strong>{hud.luckyAssistCharges ?? 0}</strong>
+            </div>
           </div>
         </aside>
 
@@ -262,6 +276,21 @@ export default function GameScreen({ settings, onFinish }: Props) {
           <span>STOP</span>
           <strong>{hud.stopSkillActive ? 'WAIT' : hud.stopSkillReady ? '1 USE' : 'USED'}</strong>
         </button>
+
+        <button
+          className="hintSkillButton"
+          disabled={!hud.hintSkillReady}
+          type="button"
+          onClick={handleHintSkill}
+        >
+          <span>HINT</span>
+          <strong>{hud.hintSkillReady ? 'BEST' : 'USED'}</strong>
+        </button>
+
+        <div className="guideRibbon">
+          <strong>SLIDE PATH</strong>
+          <span>Connect the glowing route. Use STOP when it gets dangerous.</span>
+        </div>
 
         <div
           ref={ref}

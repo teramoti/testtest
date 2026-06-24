@@ -1,0 +1,101 @@
+{
+  "ok": true,
+  "runs": [
+    {
+      "score": 54,
+      "jewels": 13,
+      "crashes": 9,
+      "travel": 13,
+      "missionClears": 4,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 52,
+      "jewels": 13,
+      "crashes": 8,
+      "travel": 15,
+      "missionClears": 4,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 65,
+      "jewels": 13,
+      "crashes": 8,
+      "travel": 15,
+      "missionClears": 4,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 68,
+      "jewels": 15,
+      "crashes": 7,
+      "travel": 16,
+      "missionClears": 5,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 46,
+      "jewels": 11,
+      "crashes": 9,
+      "travel": 14,
+      "missionClears": 3,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 33,
+      "jewels": 7,
+      "crashes": 11,
+      "travel": 10,
+      "missionClears": 2,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 58,
+      "jewels": 14,
+      "crashes": 8,
+      "travel": 15,
+      "missionClears": 4,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    },
+    {
+      "score": 42,
+      "jewels": 10,
+      "crashes": 11,
+      "travel": 10,
+      "missionClears": 3,
+      "luckyAssistUses": 3,
+      "stopUses": 2,
+      "hintUses": 3,
+      "feverTriggered": true,
+      "timeMs": 60000
+    }
+  ]
+}
