@@ -3,6 +3,7 @@ import './StartScreen.css'
 
 import titleBackground from '../../../../assets/Image/title/title_background_1280x720.png'
 import titleLogo from '../../../../assets/Image/title/title_logo.png'
+import titleKeyVisual from '../../../../assets/Image/title/title_key_visual.png'
 import titleRobotIdle01 from '../../../../assets/Image/robot_idle/robot_idle_01.png'
 import titleRobotIdle02 from '../../../../assets/Image/robot_idle/robot_idle_02.png'
 import titleRobotIdle03 from '../../../../assets/Image/robot_idle/robot_idle_03.png'
@@ -178,6 +179,20 @@ export default function StartScreen({ onStart }: Props) {
   }, [])
 
   useEffect(() => {
+    const handleTitleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !isHowToOpen && !isDifficultyDialogOpen) {
+        startGame()
+      }
+    }
+
+    window.addEventListener('keydown', handleTitleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleTitleKeyDown)
+    }
+  }, [playerCount, difficulty, isHowToOpen, isDifficultyDialogOpen])
+
+  useEffect(() => {
     const handler = (event: MessageEvent) => {
       if (event.data?.type !== 'SET_PLAYER_COUNT') return
       if (isPlayerCountFixedRef.current) return
@@ -261,43 +276,31 @@ export default function StartScreen({ onStart }: Props) {
       </div>
 
       <div className="titleCenterShowcase" aria-hidden="true">
-        <div className="titleShowcaseBoard">
-          {demoTiles.map((tile, index) => (
-            <span className="titleShowcaseCell" key={`${tile.src}-${index}`}>
-              <img
-                src={tile.src}
-                alt=""
-                draggable={false}
-              />
-            </span>
-          ))}
-          <span className="routeLoop titleRouteLoop">
-            {routeLoopSegments.map((segment) => (
-              <span
-                className={`routeLoopSegment routeLoopSegment-${segment}`}
-                key={segment}
-              />
-            ))}
-          </span>
-          <img
-            className="titleShowcaseRobot"
-            src={titleRobotFrames[titleRobotFrameIndex]}
-            alt=""
-            draggable={false}
-          />
-          <img
-            className="titleShowcaseGem"
-            src={titleGemFrames[titleGemFrameIndex]}
-            alt=""
-            draggable={false}
-          />
-          <img
-            className="titleShowcaseSpark"
-            src={sparkFrames[titleGemFrameIndex % sparkFrames.length]}
-            alt=""
-            draggable={false}
-          />
-        </div>
+        <img
+          className="titleKeyVisualImage"
+          src={titleKeyVisual}
+          alt=""
+          draggable={false}
+        />
+        <span className="titleMovingRobotShadow" />
+        <img
+          className="titleMovingRobot"
+          src={titleRobotFrames[titleRobotFrameIndex]}
+          alt=""
+          draggable={false}
+        />
+        <img
+          className="titleMovingGem titleMovingGemA"
+          src={titleGemFrames[titleGemFrameIndex]}
+          alt=""
+          draggable={false}
+        />
+        <img
+          className="titleMovingGem titleMovingGemB"
+          src={titleGemFrames[(titleGemFrameIndex + 4) % titleGemFrames.length]}
+          alt=""
+          draggable={false}
+        />
         <div className="titleShowcaseStatus">
           <span>ROUTE READY</span>
           <span>GEMS x 3</span>
@@ -311,7 +314,7 @@ export default function StartScreen({ onStart }: Props) {
             <img
               className="titleLogoImage"
               src={titleLogo}
-              alt="Robot Slide"
+              alt="ゼンマイ ルートラッシュ"
             />
           </div>
         </header>

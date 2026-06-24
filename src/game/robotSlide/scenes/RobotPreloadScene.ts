@@ -21,14 +21,14 @@ export class Start extends Phaser.Scene {
     preload(): void {
         this.cameras.main.setBackgroundColor('#071f29')
 
-        const title = this.add.text(640, 280, 'Robot Slide', {
+        const title = this.add.text(640, 280, 'Wind-Up Route Rush', {
             fontFamily: UI_FONT,
             fontSize: '52px',
             color: '#fef5c2',
             fontStyle: 'bold',
         }).setOrigin(0.5)
 
-        const subtitle = this.add.text(640, 334, 'Loading dive assets', {
+        const subtitle = this.add.text(640, 334, 'Loading route gears', {
             fontFamily: UI_FONT,
             fontSize: '22px',
             color: '#b6ecf5',

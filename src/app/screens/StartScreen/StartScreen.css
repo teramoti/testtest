@@ -1791,3 +1791,208 @@
     animation: none !important;
   }
 }
+
+/* v15: title key visual / stronger logo */
+.titleKeyVisualImage {
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 620px;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+  filter:
+    drop-shadow(0 18px 26px rgba(2, 13, 20, 0.58))
+    drop-shadow(0 0 20px rgba(114, 242, 255, 0.26));
+  animation: titleKeyVisualFloat 3.8s ease-in-out infinite;
+}
+
+.titleLogoImage {
+  width: 700px;
+  max-width: 84vw;
+}
+
+.titleCenterShowcase {
+  top: 244px;
+  width: 650px;
+  height: 430px;
+}
+
+.titleShowcaseStatus {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+}
+
+@keyframes titleKeyVisualFloat {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+/* v16: moving robot / manual-only safety assist */
+.titleMovingRobot {
+  position: absolute;
+  z-index: 6;
+  left: 72px;
+  top: 214px;
+  width: 112px;
+  height: auto;
+  image-rendering: pixelated;
+  filter:
+    drop-shadow(0 12px 10px rgba(2, 13, 20, 0.54))
+    drop-shadow(0 0 12px rgba(114, 242, 255, 0.38));
+  animation:
+    titleRobotRouteRun 5.4s linear infinite,
+    titleRobotHop 0.48s ease-in-out infinite;
+}
+
+.titleMovingRobotShadow {
+  position: absolute;
+  z-index: 5;
+  left: 92px;
+  top: 324px;
+  width: 74px;
+  height: 15px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.36);
+  filter: blur(3px);
+  animation: titleRobotShadowRun 5.4s linear infinite;
+}
+
+.titleMovingGem {
+  position: absolute;
+  z-index: 7;
+  width: 52px;
+  height: auto;
+  image-rendering: pixelated;
+  filter:
+    drop-shadow(0 9px 8px rgba(2, 13, 20, 0.54))
+    drop-shadow(0 0 14px rgba(255, 245, 160, 0.48));
+}
+
+.titleMovingGemA {
+  left: 493px;
+  top: 252px;
+  animation: titleGemFloatA 1.4s ease-in-out infinite;
+}
+
+.titleMovingGemB {
+  left: 544px;
+  top: 271px;
+  animation: titleGemFloatB 1.2s ease-in-out infinite;
+}
+
+@keyframes titleRobotRouteRun {
+  0% {
+    left: 72px;
+    top: 214px;
+    transform: scaleX(1);
+  }
+  18% {
+    left: 138px;
+    top: 154px;
+    transform: scaleX(1);
+  }
+  38% {
+    left: 292px;
+    top: 154px;
+    transform: scaleX(1);
+  }
+  56% {
+    left: 366px;
+    top: 214px;
+    transform: scaleX(1);
+  }
+  76% {
+    left: 476px;
+    top: 214px;
+    transform: scaleX(1);
+  }
+  92% {
+    left: 528px;
+    top: 234px;
+    transform: scaleX(1);
+  }
+  100% {
+    left: 72px;
+    top: 214px;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes titleRobotShadowRun {
+  0% {
+    left: 92px;
+    top: 324px;
+    opacity: 0.36;
+    width: 74px;
+  }
+  18% {
+    left: 158px;
+    top: 264px;
+    opacity: 0.28;
+    width: 66px;
+  }
+  38% {
+    left: 312px;
+    top: 264px;
+    opacity: 0.28;
+    width: 66px;
+  }
+  56% {
+    left: 386px;
+    top: 324px;
+    opacity: 0.36;
+    width: 74px;
+  }
+  76% {
+    left: 496px;
+    top: 324px;
+    opacity: 0.36;
+    width: 74px;
+  }
+  92% {
+    left: 548px;
+    top: 344px;
+    opacity: 0.34;
+    width: 70px;
+  }
+  100% {
+    left: 92px;
+    top: 324px;
+    opacity: 0.36;
+    width: 74px;
+  }
+}
+
+@keyframes titleRobotHop {
+  0%, 100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: -5px;
+  }
+}
+
+@keyframes titleGemFloatA {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(4deg);
+  }
+}
+
+@keyframes titleGemFloatB {
+  0%, 100% {
+    transform: translateY(0) rotate(6deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(-5deg);
+  }
+}

@@ -56,13 +56,6 @@ export class RobotSlideScene extends Phaser.Scene {
     queuedTilePositions: Position[]
     latestBattleSnapshot: BattleSnapshot | null
     battleAnnouncementSignature: string
-    stopSkillReady: boolean
-    stopSkillActive: boolean
-    stopSkillEvent?: Phaser.Time.TimerEvent | null
-    stopSkillWindowHandler: (() => void) | null
-    hintSkillReady: boolean
-    hintSkillWindowHandler: (() => void) | null
-    luckyAssistCharges: number
     missionTarget: number
     missionCount: number
     missionEndTime: number
@@ -89,25 +82,10 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
-        this.stopSkillReady = true
-        this.hintSkillReady = true
-        this.luckyAssistCharges = 8
-        this.stopSkillActive = false
-        this.stopSkillEvent?.remove()
-        this.stopSkillEvent = null
-        this.startMission()
-        this.feverTriggered = false
         this.speedLevel = 0
         this.queuedTilePositions = []
         this.latestBattleSnapshot = null
         this.battleAnnouncementSignature = ''
-        this.stopSkillReady = true
-        this.stopSkillActive = false
-        this.stopSkillEvent = null
-        this.stopSkillWindowHandler = null
-        this.hintSkillReady = true
-        this.hintSkillWindowHandler = null
-        this.luckyAssistCharges = 8
         this.missionTarget = 3
         this.missionCount = 0
         this.missionEndTime = 45
@@ -134,42 +112,9 @@ export class RobotSlideScene extends Phaser.Scene {
         this.robotGrid = new RobotGrid(this, this.boardManager.getSnapshot())
         this.audioDirector = new AudioDirector(this)
         this.connectEvents()
-        this.stopSkillWindowHandler = () => {
-            this.activateStopSkill()
-        }
-        this.hintSkillWindowHandler = () => {
-            this.activateHintSkill()
-        }
-        window.addEventListener('robot-slide-use-stop', this.stopSkillWindowHandler)
-        window.addEventListener('robot-slide-use-hint', this.hintSkillWindowHandler)
-
-        this.input.keyboard?.on('keydown-SPACE', () => {
-            this.activateStopSkill()
-        })
-        this.input.keyboard?.on('keydown-H', () => {
-            this.activateHintSkill()
-        })
-
         this.events.once('shutdown', () => {
             this.jewelExpireEvent?.remove()
             this.jewelExpireEvent = null
-            this.stopSkillEvent?.remove()
-            this.stopSkillEvent = null
-
-            if (this.stopSkillWindowHandler !== null) {
-                window.removeEventListener('robot-slide-use-stop', this.stopSkillWindowHandler)
-                this.stopSkillWindowHandler = null
-        this.missionTarget = 3
-        this.missionCount = 0
-        this.missionEndTime = 45
-        this.missionReward = 5
-        this.missionLabel = 'GET 3 JEWELS'
-        this.missionKind = 'jewel'
-        this.missionStartTime = GameConfig.SESSION_SECONDS
-        this.missionStartMissCount = 0
-        this.feverTriggered = false
-            }
-
             this.audioDirector.destroy()
         })
         this.startSession()
@@ -205,6 +150,114 @@ export class RobotSlideScene extends Phaser.Scene {
         })
     }
 
+    getDifficultyKey(): 'easy' | 'normal' | 'hard' {
+        const difficulty = this.options.settings?.difficulty
+
+        if (difficulty === 'easy' || difficulty === 'hard') {
+            return difficulty
+        }
+
+        return 'normal'
+    }
+
+    getLuckyAssistLimit(): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return 20
+        }
+
+        if (difficulty === 'hard') {
+            return 6
+        }
+
+        return 12
+    }
+
+    getInitialRouteJewelCount(): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return 12
+        }
+
+        if (difficulty === 'hard') {
+            return 5
+        }
+
+        return 8
+    }
+
+    getMissionJewelTarget(): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return 2
+        }
+
+        if (difficulty === 'hard') {
+            return 4
+        }
+
+        return 3
+    }
+
+    getMissionRouteTarget(remain: number): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return remain <= 18 ? 5 : 6
+        }
+
+        if (difficulty === 'hard') {
+            return remain <= 18 ? 8 : 11
+        }
+
+        return remain <= 18 ? 6 : 8
+    }
+
+    getMissionStreakTarget(remain: number): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return remain <= 18 ? 5 : 7
+        }
+
+        if (difficulty === 'hard') {
+            return remain <= 18 ? 8 : 12
+        }
+
+        return remain <= 18 ? 7 : 10
+    }
+
+    getRouteChainInterval(): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return 2
+        }
+
+        if (difficulty === 'hard') {
+            return 4
+        }
+
+        return 3
+    }
+
+    getRouteChainReward(): number {
+        const difficulty = this.getDifficultyKey()
+
+        if (difficulty === 'easy') {
+            return 5
+        }
+
+        if (difficulty === 'hard') {
+            return 3
+        }
+
+        return 4
+    }
+
     getFairBoardSeed(): number {
         const difficulty = this.options.settings?.difficulty ?? 'normal'
         const base = `${difficulty}:${GameConfig.BOARD_SIZE}:${GameConfig.BLANK_COUNT}`
@@ -226,13 +279,6 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
-        this.stopSkillReady = true
-        this.hintSkillReady = true
-        this.luckyAssistCharges = 8
-        this.stopSkillActive = false
-        this.stopSkillEvent?.remove()
-        this.stopSkillEvent = null
-        this.startMission()
         this.feverTriggered = false
         this.speedLevel = 0
         this.queuedTilePositions = []
@@ -240,6 +286,8 @@ export class RobotSlideScene extends Phaser.Scene {
         this.boardManager.resetBoard(0)
         this.latestBattleSnapshot = this.battleManager.reset()
         this.scoreManager.reset()
+        this.startMission()
+        this.boardManager.ensureRouteJewels(this.getInitialRouteJewelCount(), 3)
         this.robotGrid.hideResult()
         this.robotGrid.hideRetryNotice()
         this.robotGrid.setInteractionEnabled(false)
@@ -251,7 +299,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.applyBattleSnapshot(this.latestBattleSnapshot, true)
         this.robotGrid.sync(snapshot, this.timeLeft)
         this.emitHud()
-        this.beginRoundIntro(snapshot)
+        this.beginRoundIntro()
     }
 
     startClockTimer(): void {
@@ -269,10 +317,6 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     startRobotTimer(): void {
-        if (this.stopSkillActive) {
-            return
-        }
-
         if (this.robotEvent !== null) {
             this.robotEvent.remove()
         }
@@ -396,40 +440,6 @@ export class RobotSlideScene extends Phaser.Scene {
         })
     }
 
-    tryLuckyAssist(): boolean {
-        if (this.luckyAssistCharges <= 0 || this.busy || this.retryPending || this.sessionEnded) {
-            return false
-        }
-
-        const assistPosition = this.boardManager.getBestAssistMove()
-
-        if (assistPosition === null) {
-            return false
-        }
-
-        const beforeSnapshot = this.boardManager.getSnapshot()
-        const moveResult = this.boardManager.moveTile(assistPosition)
-
-        if (!moveResult.moved) {
-            return false
-        }
-
-        this.luckyAssistCharges -= 1
-        this.boardManager.ensureRouteJewels(2, 2)
-        this.scoreManager.registerBonus('LUCKY ASSIST', 2, 'CRASH AVOIDED')
-        const afterSnapshot = this.boardManager.getSnapshot()
-        this.busy = true
-        this.robotGrid.showAssistHint(assistPosition, 'LUCKY')
-        this.robotGrid.showCallout('LUCKY ASSIST!', 'CRASH AVOIDED', 0xa9f6ff, 760)
-        this.audioDirector.playSpecial()
-        this.robotGrid.renderSlide(afterSnapshot, moveResult, () => {
-            this.busy = false
-            this.updateThreat(afterSnapshot)
-            this.emitHud()
-        })
-        void beforeSnapshot
-        return true
-    }
 
     advanceRobot(): void {
         if (this.sessionEnded || this.busy || this.retryPending || !this.roundLive) {
@@ -439,11 +449,6 @@ export class RobotSlideScene extends Phaser.Scene {
         const stepResult = this.boardManager.stepRobot()
 
         if (!stepResult.moved) {
-            if (this.tryLuckyAssist()) {
-                this.restartRobotTimerIfRunning()
-                return
-            }
-
             this.handleCrash(stepResult.from, stepResult.blockedPosition, stepResult.direction)
             return
         }
@@ -452,10 +457,16 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = true
         const stepScoreSnapshot = this.scoreManager.registerRobotStep(afterSnapshot.routePreview, stepResult.triggeredCurrent)
 
-        if (stepScoreSnapshot.travelCount > 0 && stepScoreSnapshot.travelCount % 3 === 0) {
-            this.boardManager.ensureRouteJewels(4, 3)
-            this.scoreManager.registerBonus('ROUTE CHAIN', 3, '+3 / ROUTE GEMS')
-            this.robotGrid.showCallout('ROUTE CHAIN!', '+3 / ROUTE GEMS', 0xa9f6ff, 720)
+        const routeChainInterval = this.getRouteChainInterval()
+        const routeChainReward = this.getRouteChainReward()
+
+        if (stepScoreSnapshot.travelCount > 0 && stepScoreSnapshot.travelCount % routeChainInterval === 0) {
+            this.boardManager.ensureRouteJewels(
+                this.getDifficultyKey() === 'hard' ? 3 : 5,
+                this.getDifficultyKey() === 'hard' ? 2 : 3,
+            )
+            this.scoreManager.registerBonus('ROUTE CHAIN', routeChainReward, `+${routeChainReward} / ROUTE GEMS`)
+            this.robotGrid.showCallout('ROUTE CHAIN!', `+${routeChainReward} / ROUTE GEMS`, 0xa9f6ff, 720)
         }
 
         if (stepResult.triggeredCurrent) {
@@ -564,26 +575,32 @@ export class RobotSlideScene extends Phaser.Scene {
 
         if (missionIndex === 1) {
             this.missionKind = 'route'
-            this.missionTarget = remain <= 18 ? 6 : 8
-            this.missionReward = remain <= 18 ? 4 : 5
-            this.missionEndTime = Math.max(0, this.timeLeft - 14)
+            this.missionTarget = this.getMissionRouteTarget(remain)
+            this.missionReward = this.getDifficultyKey() === 'hard'
+                ? remain <= 18 ? 6 : 7
+                : remain <= 18 ? 4 : 5
+            this.missionEndTime = Math.max(0, this.timeLeft - (this.getDifficultyKey() === 'easy' ? 18 : 14))
             this.missionLabel = `SAFE ROUTE ${this.missionTarget}`
             return
         }
 
         if (missionIndex === 2) {
             this.missionKind = 'streak'
-            this.missionTarget = remain <= 18 ? 7 : 10
-            this.missionReward = remain <= 18 ? 4 : 5
+            this.missionTarget = this.getMissionStreakTarget(remain)
+            this.missionReward = this.getDifficultyKey() === 'hard'
+                ? remain <= 18 ? 6 : 7
+                : remain <= 18 ? 4 : 5
             this.missionEndTime = Math.max(0, this.timeLeft - this.missionTarget)
             this.missionLabel = `NO MISS ${this.missionTarget}s`
             return
         }
 
         this.missionKind = 'jewel'
-        this.missionTarget = remain <= 18 ? 2 : 3
-        this.missionReward = remain <= 18 ? 4 : 5
-        this.missionEndTime = Math.max(0, this.timeLeft - 15)
+        this.missionTarget = remain <= 18 ? Math.min(2, this.getMissionJewelTarget()) : this.getMissionJewelTarget()
+        this.missionReward = this.getDifficultyKey() === 'hard'
+            ? remain <= 18 ? 6 : 7
+            : remain <= 18 ? 4 : 5
+        this.missionEndTime = Math.max(0, this.timeLeft - (this.getDifficultyKey() === 'easy' ? 18 : 15))
         this.missionLabel = `GET ${this.missionTarget} JEWELS`
     }
 
@@ -592,12 +609,8 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     completeMission(): void {
-        this.scoreManager.registerBonus('MISSION CLEAR', this.missionReward, `+${this.missionReward} / STOP READY`)
-        this.stopSkillReady = true
-        this.hintSkillReady = true
-        this.luckyAssistCharges = 8
-        this.stopSkillActive = false
-        this.boardManager.ensureRouteJewels(3, 3)
+        this.scoreManager.registerBonus('MISSION CLEAR', this.missionReward, `+${this.missionReward} / ROUTE GEMS`)
+        this.boardManager.ensureRouteJewels(this.getDifficultyKey() === 'hard' ? 3 : 5, this.getDifficultyKey() === 'hard' ? 2 : 3)
         this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
         this.robotGrid.showCallout('MISSION CLEAR!', `+${this.missionReward} / ROUTE GEMS`, 0xffe38f, 980)
         this.audioDirector.playSpecial()
@@ -651,21 +664,16 @@ export class RobotSlideScene extends Phaser.Scene {
             this.missionCount += 1
         }
 
-        this.boardManager.ensureRouteJewels(3, 2)
+        this.boardManager.ensureRouteJewels(this.getDifficultyKey() === 'hard' ? 3 : 5, 2)
 
         if (jewelValue >= 5) {
-            this.stopSkillReady = true
-            this.hintSkillReady = true
-            this.boardManager.upgradeRouteJewels(3, 5)
+                    this.boardManager.upgradeRouteJewels(this.getDifficultyKey() === 'hard' ? 3 : 5, 5)
             this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
             this.robotGrid.showCallout('POWER GEM!', 'ROUTE POWER UP', 0xf1a8ff, 900)
             this.audioDirector.playSpecial()
         } else if (jewelValue >= 3) {
             this.timeLeft = Math.min(GameConfig.SESSION_SECONDS, this.timeLeft + 2)
             this.robotGrid.showCallout('TIME GEM!', '+2 SEC', 0x9ed8ff, 760)
-        } else if (jewelValue >= 2 && !this.stopSkillReady && this.missionKind !== 'jewel') {
-            this.stopSkillReady = true
-            this.robotGrid.showCallout('CHARGE GEM!', 'STOP READY', 0xa9f6ff, 720)
         }
 
         if (this.missionCount >= this.missionTarget) {
@@ -683,64 +691,16 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         this.feverTriggered = true
-        this.stopSkillReady = true
-        this.hintSkillReady = true
-        this.boardManager.upgradeRouteJewels(8, 5)
-        this.boardManager.ensureRouteJewels(8, 5)
+        this.boardManager.upgradeRouteJewels(this.getDifficultyKey() === 'hard' ? 5 : 8, 5)
+        this.boardManager.ensureRouteJewels(this.getDifficultyKey() === 'hard' ? 5 : 8, 5)
         this.scoreManager.registerBonus('FINAL FEVER', 5, '+5 / ROUTE POWER')
         this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
-        this.robotGrid.showCallout('FINAL FEVER!', 'ROUTE POWER + SKILLS', 0xffd48f, 1040)
+        this.robotGrid.showCallout('FINAL FEVER!', 'ROUTE POWER', 0xffd48f, 1040)
         this.cameras.main.flash(260, 255, 218, 130, false)
         this.audioDirector.playSpecial()
         this.emitHud()
     }
 
-    activateHintSkill(): void {
-        if (this.sessionEnded || this.retryPending || !this.roundLive || !this.hintSkillReady) {
-            return
-        }
-
-        const bestMove = this.boardManager.getBestAssistMove()
-
-        if (bestMove === null) {
-            this.robotGrid.showCallout('NO HINT', 'MAKE A ROUTE', 0xffc08b, 620)
-            return
-        }
-
-        this.hintSkillReady = false
-        this.robotGrid.showAssistHint(bestMove, 'BEST MOVE')
-        this.robotGrid.showCallout('ASSIST!', 'BEST MOVE MARKED', 0xffe281, 760)
-        this.audioDirector.playSpecial()
-        this.emitHud()
-    }
-
-    activateStopSkill(): void {
-        if (this.sessionEnded || this.retryPending || !this.roundLive || !this.stopSkillReady || this.stopSkillActive) {
-            return
-        }
-
-        this.stopSkillReady = false
-        this.stopSkillActive = true
-
-        if (this.robotEvent !== null) {
-            this.robotEvent.remove()
-            this.robotEvent = null
-        }
-
-        this.robotGrid.showCallout('STOP!', '2.2s THINK TIME', 0xa9f6ff, 900)
-        this.audioDirector.playSpecial()
-        this.emitHud()
-
-        this.stopSkillEvent = this.time.addEvent({
-            delay: 2200,
-            callback: () => {
-                this.stopSkillActive = false
-                this.stopSkillEvent = null
-                this.startRobotTimer()
-                this.emitHud()
-            },
-        })
-    }
 
     startBoost(): void {
         if (this.sessionEnded || this.retryPending || this.boosting || !this.roundLive) {
@@ -792,7 +752,7 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     restartRobotTimerIfRunning(): void {
-        if (this.sessionEnded || this.retryPending || this.stopSkillActive || this.robotEvent === null) {
+        if (this.sessionEnded || this.retryPending || this.robotEvent === null) {
             return
         }
 
@@ -825,9 +785,6 @@ export class RobotSlideScene extends Phaser.Scene {
         this.busy = false
         this.retryPending = false
         this.boosting = false
-        this.stopSkillActive = false
-        this.stopSkillEvent?.remove()
-        this.stopSkillEvent = null
         this.queuedTilePositions = []
         this.robotGrid.hideRetryNotice()
         this.robotGrid.setInteractionEnabled(false)
@@ -881,7 +838,7 @@ export class RobotSlideScene extends Phaser.Scene {
                 scores,
                 currentScore: score,
                 timeLeft: this.timeLeft,
-                ruleName: 'Robot Slide',
+                ruleName: 'Wind-Up Route Rush',
                 jewelCount: scoreSnapshot.jewelCount,
                 missCount: scoreSnapshot.crashCount,
                 chainCount: scoreSnapshot.comboCount,
@@ -889,10 +846,6 @@ export class RobotSlideScene extends Phaser.Scene {
                 lastEventLabel: scoreSnapshot.lastEventLabel,
                 lastAward: scoreSnapshot.lastAward,
                 lastAwardDetail: scoreSnapshot.lastAwardDetail,
-                stopSkillReady: this.stopSkillReady,
-                stopSkillActive: this.stopSkillActive,
-                hintSkillReady: this.hintSkillReady,
-                luckyAssistCharges: this.luckyAssistCharges,
                 missionLabel: this.missionLabel,
                 missionCount: this.missionCount,
                 missionTarget: this.missionTarget,
@@ -939,19 +892,28 @@ export class RobotSlideScene extends Phaser.Scene {
 
         if (currentPlayerIndex + 1 < playerCount) {
             this.options.currentPlayerIndex = currentPlayerIndex + 1
-            this.time.delayedCall(2200, () => {
+            this.robotGrid.showCallout(
+                `NEXT PLAYER ${currentPlayerIndex + 2}`,
+                'GET READY',
+                0xffe281,
+                1600,
+            )
+            this.time.delayedCall(2600, () => {
                 this.scene.restart(this.options)
             })
             return
         }
 
-        this.onFinish?.({
-            results: playerStats.map((stats, index) => ({
-                player: index + 1,
-                score: stats.score,
-                missCount: stats.missCount,
-                travelCount: stats.travelCount,
-            })),
+        this.robotGrid.showCallout('GAME SET!', 'RESULT', 0xffe281, 900)
+        this.time.delayedCall(900, () => {
+            this.onFinish?.({
+                results: playerStats.map((stats, index) => ({
+                    player: index + 1,
+                    score: stats.score,
+                    missCount: stats.missCount,
+                    travelCount: stats.travelCount,
+                })),
+            })
         })
     }
 
@@ -1001,7 +963,7 @@ export class RobotSlideScene extends Phaser.Scene {
         return 1 - this.timeLeft / GameConfig.SESSION_SECONDS
     }
 
-    beginRoundIntro(snapshot: BoardSnapshot): void {
+    beginRoundIntro(): void {
         this.robotGrid.showCallout('ROUND START', 'COLLECT JEWELS', 0x8fe5eb, 640)
         this.time.delayedCall(760, () => {
             if (this.sessionEnded) {
@@ -1017,9 +979,16 @@ export class RobotSlideScene extends Phaser.Scene {
 
             this.roundLive = true
             this.robotGrid.setInteractionEnabled(true)
+
+            const firstMove = this.boardManager.getBestAssistMove()
+            if (firstMove !== null) {
+                this.robotGrid.showAssistHint(firstMove, 'FIRST MOVE')
+                this.robotGrid.showCallout('FIRST MOVE', 'MARKED ON BOARD', 0xffe281, 760)
+            }
+
             this.startClockTimer()
             this.startRobotTimer()
-            this.updateThreat(snapshot)
+            this.updateThreat(this.boardManager.getSnapshot())
         })
     }
 

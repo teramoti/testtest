@@ -47,10 +47,6 @@ type GameHudState = {
   lastEventLabel?: string
   lastAward?: number
   lastAwardDetail?: string
-  stopSkillReady?: boolean
-  stopSkillActive?: boolean
-  hintSkillReady?: boolean
-  luckyAssistCharges?: number
   missionLabel?: string
   missionCount?: number
   missionTarget?: number
@@ -137,7 +133,7 @@ export default function GameScreen({ settings, onFinish }: Props) {
     scores: Array(settings.playerCount).fill(null),
     currentScore: null,
     timeLeft: getGameTimeLimitSeconds(),
-    ruleName: 'Robot Slide',
+    ruleName: 'Wind-Up Route Rush',
     jewelCount: 0,
     missCount: 0,
     chainCount: 0,
@@ -145,10 +141,6 @@ export default function GameScreen({ settings, onFinish }: Props) {
     lastEventLabel: 'READY',
     lastAward: 0,
     lastAwardDetail: '',
-    stopSkillReady: true,
-    stopSkillActive: false,
-    hintSkillReady: true,
-    luckyAssistCharges: 8,
     missionLabel: 'GET 3 JEWELS',
     missionCount: 0,
     missionTarget: 3,
@@ -208,13 +200,6 @@ export default function GameScreen({ settings, onFinish }: Props) {
     }
   }, [difficulty, onFinish, settings])
 
-  const handleStopSkill = () => {
-    window.dispatchEvent(new Event('robot-slide-use-stop'))
-  }
-
-  const handleHintSkill = () => {
-    window.dispatchEvent(new Event('robot-slide-use-hint'))
-  }
 
   return (
     <div className="gameScreenShell">
@@ -253,8 +238,8 @@ export default function GameScreen({ settings, onFinish }: Props) {
               <strong>{hud.missCount ?? 0}</strong>
             </div>
             <div>
-              <span>LUCKY</span>
-              <strong>{hud.luckyAssistCharges ?? 0}</strong>
+              <span>CHAIN</span>
+              <strong>{hud.chainCount ?? 0}</strong>
             </div>
           </div>
         </aside>
@@ -267,29 +252,10 @@ export default function GameScreen({ settings, onFinish }: Props) {
             <small>{Math.max(0, Math.ceil(hud.missionTimeLeft ?? 0))}s</small>
           </div>
 
-        <button
-          className={`stopSkillButton ${hud.stopSkillActive ? 'stopSkillButtonActive' : ''}`}
-          disabled={!hud.stopSkillReady || hud.stopSkillActive}
-          type="button"
-          onClick={handleStopSkill}
-        >
-          <span>STOP</span>
-          <strong>{hud.stopSkillActive ? 'WAIT' : hud.stopSkillReady ? '1 USE' : 'USED'}</strong>
-        </button>
-
-        <button
-          className="hintSkillButton"
-          disabled={!hud.hintSkillReady}
-          type="button"
-          onClick={handleHintSkill}
-        >
-          <span>HINT</span>
-          <strong>{hud.hintSkillReady ? 'BEST' : 'USED'}</strong>
-        </button>
 
         <div className="guideRibbon">
           <strong>SLIDE PATH</strong>
-          <span>Connect the glowing route. Use STOP when it gets dangerous.</span>
+          <span>Connect the glowing route before the robot hits a dead end.</span>
         </div>
 
         <div
