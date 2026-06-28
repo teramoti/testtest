@@ -39,7 +39,7 @@ import { difficultyDescriptions, getGameBoardSize } from '../../data/gameRules'
 
 type Difficulty = 'easy' | 'normal' | 'hard'
 type TitleButton = 'start' | 'howTo'
-type HowToPage = 'route' | 'slide' | 'score'
+type HowToPage = 'route' | 'slide' | 'objects' | 'robot' | 'score'
 
 type Props = {
   onStart: (settings: {
@@ -62,23 +62,63 @@ const howToPages: Array<{
 }> = [
   {
     id: 'route',
-    label: 'ルート',
-    title: '道をつなぐ',
-    body: 'ロボットの進む先に道がつながるように、タイルの並びを見て動かします。',
+    label: '目的',
+    title: '60秒でロボットを宝石へ導く',
+    body: 'ロボットは光る道に沿って自動で進みます。道が途切れる前にタイルをスライドして、宝石のあるルートへつなげます。',
   },
   {
     id: 'slide',
-    label: 'スライド',
-    title: '空白へ動かす',
-    body: '同じ行または列にある空白マスへ、タイルをまとめてスライドできます。',
+    label: '操作',
+    title: '同じ行・列のタイルを空白へスライド',
+    body: 'クリックしたタイルと空白が同じ行か列にある時、その間のタイル列が空白へスライドします。複数空白がある場合は一番近い空白へ動きます。',
+  },
+  {
+    id: 'objects',
+    label: '画面',
+    title: 'オブジェクトと効果',
+    body: '光る線は現在ロボットが進める道、黄色い輪は次に狙う位置、宝石は得点です。宝石は1/2/3/5点があり、5点宝石は周囲のルート宝石を強化します。',
+  },
+  {
+    id: 'robot',
+    label: '分岐',
+    title: 'ロボットのルート決定',
+    body: 'ロボットは今いるタイルの出口から進める方向を選びます。分岐では現在向いている方向に近い出口を優先します。行き止まりになるとMISSです。',
   },
   {
     id: 'score',
-    label: 'スコア',
-    title: '宝石を集める',
-    body: 'つながった道の先にある宝石を取るとスコアが増えます。長く安全なルートを作るほど有利です。',
+    label: '終了',
+    title: '60秒でスコアを競う',
+    body: '制限時間は60秒です。TIMEが0になるとResultへ進みます。MISSは減点ではなく失敗回数として記録され、宝石・CHAIN・MISSIONでスコアが伸びます。',
   },
 ]
+
+const howToFacts: Record<HowToPage, string[]> = {
+  route: [
+    '光る線＝現在進めるルート',
+    '黄色い輪＝次に動かす候補',
+    '宝石の方向へ道をつなぐ',
+  ],
+  slide: [
+    '同じ行/列なら列ごと動く',
+    '複数空白では近い空白を優先',
+    'クリック位置のマスを直接判定',
+  ],
+  objects: [
+    '赤/青/紫の宝石＝得点',
+    '5点宝石＝ルート宝石を強化',
+    'MISS＝行き止まり回数',
+  ],
+  robot: [
+    'ロボットは自動で進む',
+    '分岐は進行方向に近い出口を優先',
+    '行き止まり前に道を差し替える',
+  ],
+  score: [
+    '制限時間は60秒',
+    'MISSION達成でボーナス',
+    'CHAINで追加得点',
+  ],
+}
 
 const titleRobotFrames = [
   titleRobotIdle01,
@@ -236,45 +276,6 @@ export default function StartScreen({ onStart }: Props) {
       className="backColor startScreenYellowBackground"
       style={{ backgroundImage: `url(${titleBackground})` }}
     >
-      <div className="titleStageDecoration" aria-hidden="true">
-        <img
-          className="titleRobotMascot"
-          src={titleRobotFrames[titleRobotFrameIndex]}
-          alt=""
-          draggable={false}
-        />
-        <img
-          className="titleGemMascot titleGemMascotLeft"
-          src={titleGemFrames[titleGemFrameIndex]}
-          alt=""
-          draggable={false}
-        />
-        <img
-          className="titleGemMascot titleGemMascotRight"
-          src={titleGemFrames[(titleGemFrameIndex + 3) % titleGemFrames.length]}
-          alt=""
-          draggable={false}
-        />
-        {[0, 1, 2, 3].map((index) => (
-          <img
-            className={`titleSparkDecor titleSparkDecor${index + 1}`}
-            src={sparkFrames[(titleGemFrameIndex + index) % sparkFrames.length]}
-            alt=""
-            draggable={false}
-            key={index}
-          />
-        ))}
-        {[0, 1, 2, 3, 4, 5].map((index) => (
-          <img
-            className={`titleGemTrail titleGemTrail${index + 1}`}
-            src={titleGemFrames[(titleGemFrameIndex + index) % titleGemFrames.length]}
-            alt=""
-            draggable={false}
-            key={`trail-${index}`}
-          />
-        ))}
-      </div>
-
       <div className="titleCenterShowcase" aria-hidden="true">
         <img
           className="titleKeyVisualImage"
@@ -282,22 +283,43 @@ export default function StartScreen({ onStart }: Props) {
           alt=""
           draggable={false}
         />
+        <svg
+          className="titleRouteSvg"
+          viewBox="0 0 620 410"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <polyline
+            className="titleRouteStroke titleRouteStrokeShadow"
+            points="131,131 209,131 287,131 365,131 365,209 443,209 521,209"
+          />
+          <polyline
+            className="titleRouteStroke titleRouteStrokeGlow"
+            points="131,131 209,131 287,131 365,131 365,209 443,209 521,209"
+          />
+          <polyline
+            className="titleRouteStroke titleRouteStrokeMain"
+            points="131,131 209,131 287,131 365,131 365,209 443,209 521,209"
+          />
+          <polyline
+            className="titleRouteStroke titleRouteStrokeCore"
+            points="131,131 209,131 287,131 365,131 365,209 443,209 521,209"
+          />
+          {[131, 209, 287, 365, 443, 521].map((x, index) => (
+            <circle
+              className="titleRouteNode"
+              cx={index === 4 || index === 5 ? x : x}
+              cy={index === 4 || index === 5 ? 209 : 131}
+              r="8"
+              key={`route-node-${index}`}
+            />
+          ))}
+          <circle className="titleRouteNode" cx="365" cy="209" r="8" />
+        </svg>
         <span className="titleMovingRobotShadow" />
         <img
           className="titleMovingRobot"
           src={titleRobotFrames[titleRobotFrameIndex]}
-          alt=""
-          draggable={false}
-        />
-        <img
-          className="titleMovingGem titleMovingGemA"
-          src={titleGemFrames[titleGemFrameIndex]}
-          alt=""
-          draggable={false}
-        />
-        <img
-          className="titleMovingGem titleMovingGemB"
-          src={titleGemFrames[(titleGemFrameIndex + 4) % titleGemFrames.length]}
           alt=""
           draggable={false}
         />
@@ -307,6 +329,7 @@ export default function StartScreen({ onStart }: Props) {
           <span>60 SEC</span>
         </div>
       </div>
+
 
       <div className="startScreen richStartPanel">
         <header className="titleArea richTitleArea">
@@ -361,7 +384,7 @@ export default function StartScreen({ onStart }: Props) {
           </div>
 
           <div className="startPatternDisplay">
-            <span className="startPatternLabel">Board Size</span>
+            <span className="startPatternLabel">BOARD</span>
             <strong className="startPatternValue">
               {boardSize} x {boardSize}
             </strong>
@@ -529,6 +552,11 @@ export default function StartScreen({ onStart }: Props) {
                 <div className="howToPageText" key={page.id}>
                   <p className="howToStepTitle">{page.title}</p>
                   <p className="howToBody">{page.body}</p>
+                  <ul className="howToFactList">
+                    {howToFacts[page.id].map((fact) => (
+                      <li key={fact}>{fact}</li>
+                    ))}
+                  </ul>
                   <p className="howToBody howToDifficultyText">
                     {difficultyDescriptions[difficulty]}
                   </p>

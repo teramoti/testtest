@@ -1813,9 +1813,9 @@
 }
 
 .titleCenterShowcase {
-  top: 244px;
-  width: 650px;
-  height: 430px;
+  top: 238px;
+  width: 690px;
+  height: 444px;
 }
 
 .titleShowcaseStatus {
@@ -1995,4 +1995,483 @@
   50% {
     transform: translateY(-7px) rotate(-5deg);
   }
+}
+
+/* v18: richer title presentation */
+.titleBadge60Image {
+  position: absolute;
+  z-index: 9;
+  right: -52px;
+  top: -8px;
+  width: 238px;
+  height: auto;
+  filter:
+    drop-shadow(0 16px 18px rgba(2, 13, 20, 0.56))
+    drop-shadow(0 0 18px rgba(255, 220, 115, 0.34));
+  animation: titleBadgeBob 2.8s ease-in-out infinite;
+}
+
+.titleRulePlateImage {
+  position: absolute;
+  z-index: 8;
+  left: -30px;
+  bottom: 20px;
+  width: 430px;
+  height: auto;
+  filter:
+    drop-shadow(0 12px 16px rgba(2, 13, 20, 0.54))
+    drop-shadow(0 0 14px rgba(114, 242, 255, 0.22));
+  animation: titleRulePlateGlow 2.4s ease-in-out infinite alternate;
+}
+
+.titleBottomMarquee {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 4;
+  display: flex;
+  gap: 12px;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border: 2px solid rgba(255, 214, 116, 0.58);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(3, 23, 30, 0.78), rgba(13, 79, 90, 0.72), rgba(3, 23, 30, 0.78));
+  box-shadow:
+    0 10px 24px rgba(2, 13, 20, 0.46),
+    inset 0 0 22px rgba(114, 242, 255, 0.18);
+  pointer-events: none;
+}
+
+.titleBottomMarquee span {
+  color: #fff0a8;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+  text-shadow:
+    0 2px 0 rgba(42, 15, 2, 0.85),
+    0 0 10px rgba(255, 225, 120, 0.34);
+}
+
+.titleBottomMarquee span:nth-child(even) {
+  color: #aefaff;
+}
+
+.richTitleArea::after {
+  content: "PRESS ENTER / CLICK START";
+  position: absolute;
+  left: 50%;
+  top: 196px;
+  transform: translateX(-50%);
+  padding: 7px 18px;
+  border: 2px solid rgba(114, 242, 255, 0.62);
+  border-radius: 999px;
+  background: rgba(3, 22, 30, 0.72);
+  color: #bdfcff;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 2.2px;
+  text-shadow: 0 0 12px rgba(114, 242, 255, 0.52);
+  box-shadow: inset 0 0 16px rgba(114, 242, 255, 0.16);
+  animation: titlePressBlink 1.15s ease-in-out infinite;
+}
+
+.titleCenterShowcase::before {
+  animation: titleRouteScan 2.6s linear infinite;
+}
+
+.titleCenterShowcase::after {
+  animation: titleRouteScan 3.2s linear infinite reverse;
+}
+
+@keyframes titleBadgeBob {
+  0%, 100% {
+    transform: translateY(0) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+@keyframes titleRulePlateGlow {
+  0% {
+    filter:
+      drop-shadow(0 12px 16px rgba(2, 13, 20, 0.54))
+      drop-shadow(0 0 10px rgba(114, 242, 255, 0.18));
+  }
+  100% {
+    filter:
+      drop-shadow(0 16px 20px rgba(2, 13, 20, 0.6))
+      drop-shadow(0 0 20px rgba(114, 242, 255, 0.36));
+  }
+}
+
+@keyframes titlePressBlink {
+  0%, 100% {
+    opacity: 0.66;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes titleRouteScan {
+  0% {
+    opacity: 0.2;
+    transform: translateX(-24px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateX(24px);
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateX(-24px);
+  }
+}
+
+/* v19: clean title layout */
+.titleStageDecoration,
+.titleGemMascot,
+.titleGemTrail,
+.titleSparkDecor,
+.titleBadge60Image,
+.titleRulePlateImage,
+.titleBottomMarquee,
+.titleMovingGem {
+  display: none !important;
+}
+
+.richTitleArea::after {
+  content: none !important;
+}
+
+.titleLogoImage {
+  width: 640px !important;
+  max-width: 76vw !important;
+}
+
+.titleCenterShowcase {
+  left: 42% !important;
+  top: 282px !important;
+  z-index: 2 !important;
+  width: 560px !important;
+  height: 348px !important;
+}
+
+.titleKeyVisualImage {
+  left: 50% !important;
+  top: 0 !important;
+  width: 520px !important;
+  transform: translateX(-50%) !important;
+  animation: titleKeyVisualFloatClean 3.8s ease-in-out infinite !important;
+}
+
+.titleShowcaseStatus {
+  bottom: -2px !important;
+  padding: 7px 14px !important;
+  max-width: 440px !important;
+  gap: 14px !important;
+}
+
+.titleShowcaseStatus span {
+  font-size: 13px !important;
+  letter-spacing: 0.8px !important;
+}
+
+.titleMovingRobot {
+  z-index: 6 !important;
+  width: 64px !important;
+  height: auto !important;
+  image-rendering: pixelated;
+  animation:
+    titleRobotTileRouteClean 5.2s linear infinite,
+    titleRobotHopClean 0.48s ease-in-out infinite !important;
+}
+
+.titleMovingRobotShadow {
+  z-index: 5 !important;
+  width: 52px !important;
+  height: 10px !important;
+  animation: titleRobotTileShadowClean 5.2s linear infinite !important;
+}
+
+@keyframes titleKeyVisualFloatClean {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+/* Coordinates follow the route drawn in title_key_visual.png. */
+@keyframes titleRobotTileRouteClean {
+  0% { left: 98px; top: 117px; transform: scaleX(1); }
+  7% { left: 98px; top: 52px; transform: scaleX(1); }
+  14% { left: 163px; top: 52px; transform: scaleX(1); }
+  21% { left: 229px; top: 52px; transform: scaleX(1); }
+  28% { left: 294px; top: 52px; transform: scaleX(1); }
+  35% { left: 294px; top: 117px; transform: scaleX(1); }
+  42% { left: 360px; top: 117px; transform: scaleX(1); }
+  49% { left: 360px; top: 52px; transform: scaleX(1); }
+  56% { left: 425px; top: 52px; transform: scaleX(1); }
+  64% { left: 425px; top: 183px; transform: scaleX(1); }
+  72% { left: 360px; top: 183px; transform: scaleX(-1); }
+  80% { left: 294px; top: 183px; transform: scaleX(-1); }
+  88% { left: 229px; top: 183px; transform: scaleX(-1); }
+  94% { left: 163px; top: 183px; transform: scaleX(-1); }
+  100% { left: 98px; top: 117px; transform: scaleX(1); }
+}
+
+@keyframes titleRobotTileShadowClean {
+  0% { left: 106px; top: 181px; opacity: 0.36; }
+  7% { left: 106px; top: 116px; opacity: 0.34; }
+  14% { left: 171px; top: 116px; opacity: 0.34; }
+  21% { left: 237px; top: 116px; opacity: 0.34; }
+  28% { left: 302px; top: 116px; opacity: 0.34; }
+  35% { left: 302px; top: 181px; opacity: 0.36; }
+  42% { left: 368px; top: 181px; opacity: 0.36; }
+  49% { left: 368px; top: 116px; opacity: 0.34; }
+  56% { left: 433px; top: 116px; opacity: 0.34; }
+  64% { left: 433px; top: 247px; opacity: 0.36; }
+  72% { left: 368px; top: 247px; opacity: 0.36; }
+  80% { left: 302px; top: 247px; opacity: 0.36; }
+  88% { left: 237px; top: 247px; opacity: 0.36; }
+  94% { left: 171px; top: 247px; opacity: 0.36; }
+  100% { left: 106px; top: 181px; opacity: 0.36; }
+}
+
+@keyframes titleRobotHopClean {
+  0%, 100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: -3px;
+  }
+}
+
+.menuArea {
+  z-index: 12 !important;
+}
+
+.titleButtonArea,
+.titleStartButton,
+.titleHowToButton,
+.difficultySetting,
+.playerSetting,
+.startPatternDisplay {
+  z-index: 13 !important;
+}
+
+.guideRibbon {
+  pointer-events: none;
+}
+
+/* v22: lower title alpha intensity, route image unchanged */
+.startScreenYellowBackground::before,
+.startScreenYellowBackground::after,
+.richStartPanel::before,
+.richStartPanel::after {
+  opacity: 0.34 !important;
+}
+
+.titleCenterShowcase::before,
+.titleCenterShowcase::after {
+  opacity: 0.42 !important;
+  filter: drop-shadow(0 0 8px rgba(114, 242, 255, 0.24)) !important;
+}
+
+.titleKeyVisualImage {
+  filter:
+    drop-shadow(0 12px 18px rgba(2, 13, 20, 0.42))
+    drop-shadow(0 0 10px rgba(114, 242, 255, 0.16)) !important;
+}
+
+.titleLogoImage {
+  filter:
+    drop-shadow(0 8px 0 rgba(2, 13, 20, 0.16))
+    drop-shadow(0 12px 20px rgba(2, 13, 20, 0.34)) !important;
+}
+
+.titleMovingRobot {
+  filter:
+    drop-shadow(0 8px 8px rgba(2, 13, 20, 0.36))
+    drop-shadow(0 0 8px rgba(114, 242, 255, 0.24)) !important;
+}
+
+.titleMovingRobotShadow {
+  opacity: 0.28 !important;
+}
+
+.difficultyCurrent,
+.numberInput,
+.startPatternDisplay {
+  background-color: rgba(2, 13, 20, 0.50) !important;
+}
+
+.difficultyOpenButton {
+  background: rgba(54, 153, 165, 0.88) !important;
+}
+
+.titleShowcaseStatus {
+  background: rgba(3, 23, 30, 0.74) !important;
+}
+
+/* v24: route line is SVG overlay, not baked into title_key_visual.png */
+.titleRouteSvg {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 0;
+  width: 520px;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+  overflow: visible;
+}
+
+.titleRouteStroke {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.titleRouteStrokeShadow {
+  stroke: rgba(4, 22, 28, 0.86);
+  stroke-width: 25;
+}
+
+.titleRouteStrokeGlow {
+  stroke: rgba(67, 230, 245, 0.62);
+  stroke-width: 20;
+  filter: drop-shadow(0 0 8px rgba(89, 239, 255, 0.46));
+}
+
+.titleRouteStrokeMain {
+  stroke: rgba(116, 250, 255, 0.98);
+  stroke-width: 13;
+}
+
+.titleRouteStrokeCore {
+  stroke: rgba(255, 231, 122, 0.92);
+  stroke-width: 4;
+}
+
+.titleRouteNode {
+  fill: rgba(122, 250, 255, 0.92);
+  stroke: rgba(255, 232, 124, 0.95);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 5px rgba(116, 250, 255, 0.54));
+}
+
+/* Same route as SVG polyline:
+   image points: 131,131 -> 209,131 -> 287,131 -> 365,131 -> 365,209 -> 443,209 -> 521,209
+   display is 520 / 620 scale, so robot top-left is manually offset from those points. */
+@keyframes titleRobotTileRouteClean {
+  0% {
+    left: 82px;
+    top: 72px;
+    transform: scaleX(1);
+  }
+  16% {
+    left: 148px;
+    top: 72px;
+    transform: scaleX(1);
+  }
+  32% {
+    left: 213px;
+    top: 72px;
+    transform: scaleX(1);
+  }
+  48% {
+    left: 279px;
+    top: 72px;
+    transform: scaleX(1);
+  }
+  64% {
+    left: 279px;
+    top: 137px;
+    transform: scaleX(1);
+  }
+  80% {
+    left: 344px;
+    top: 137px;
+    transform: scaleX(1);
+  }
+  94% {
+    left: 410px;
+    top: 137px;
+    transform: scaleX(1);
+  }
+  100% {
+    left: 82px;
+    top: 72px;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes titleRobotTileShadowClean {
+  0% {
+    left: 92px;
+    top: 133px;
+    opacity: 0.30;
+  }
+  16% {
+    left: 158px;
+    top: 133px;
+    opacity: 0.30;
+  }
+  32% {
+    left: 223px;
+    top: 133px;
+    opacity: 0.30;
+  }
+  48% {
+    left: 289px;
+    top: 133px;
+    opacity: 0.30;
+  }
+  64% {
+    left: 289px;
+    top: 198px;
+    opacity: 0.32;
+  }
+  80% {
+    left: 354px;
+    top: 198px;
+    opacity: 0.32;
+  }
+  94% {
+    left: 420px;
+    top: 198px;
+    opacity: 0.32;
+  }
+  100% {
+    left: 92px;
+    top: 133px;
+    opacity: 0.30;
+  }
+}
+
+/* v26: stronger how-to explanation */
+.howToFactList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.howToFactList li {
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 226, 129, 0.34);
+  border-radius: 10px;
+  background: rgba(5, 39, 49, 0.64);
+  color: #fff4c5;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
 }

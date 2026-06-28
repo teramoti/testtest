@@ -22,6 +22,7 @@ interface TileView {
     position: Position
     tile: PathTileSnapshot
     _pressStart?: { x: number; y: number }
+    _pressPosition?: Position
     container: Phaser.GameObjects.Container
     plate: Phaser.GameObjects.Graphics
     tileSprite: Phaser.GameObjects.Image
@@ -647,10 +648,10 @@ export class RobotGrid {
 
     updateTimer(seconds: number): void {
         this.latestTimeLeft = seconds
-        this.timerText.setText(`${seconds}s`)
+        this.timerText.setText(`${seconds} TURN`)
         this.timerFill.clear()
 
-        const ratio = Phaser.Math.Clamp(seconds / GameConfig.SESSION_SECONDS, 0, 1)
+        const ratio = Phaser.Math.Clamp(seconds / GameConfig.TURN_LIMIT, 0, 1)
         const fillColor = seconds <= GameConfig.TIME_DANGER_SECONDS
             ? 0xf26a5f
             : seconds <= GameConfig.TIME_WARNING_SECONDS
@@ -691,7 +692,7 @@ export class RobotGrid {
 
         const text = this.scene.add.text(center.x, center.y - GameConfig.TILE_SIZE * 0.72, label, {
             fontFamily: UI_FONT,
-            fontSize: '18px',
+            fontSize: '14px',
             fontStyle: '900',
             color: '#fff4c5',
             stroke: '#072a36',
@@ -713,13 +714,14 @@ export class RobotGrid {
     showCallout(title: string, body: string, accentColor: number = 0x8fe5eb, durationMs: number = 760): void {
         this.calloutSerial += 1
         const calloutSerial = this.calloutSerial
-        this.drawRoundedPanel(this.callout.background, -192, -54, 384, 108, 28, 0x072a36, 0.94, accentColor, 2)
+        this.drawRoundedPanel(this.callout.background, -130, -34, 260, 68, 18, 0x072a36, 0.78, accentColor, 2)
         this.callout.titleText.setText(title)
         this.callout.bodyText.setText(body)
         this.callout.container.setVisible(true)
         this.callout.container.setAlpha(0)
         this.callout.container.setScale(0.94)
-        this.callout.container.y = 344
+        this.callout.container.x = 1008
+        this.callout.container.y = 102
         this.scene.tweens.killTweensOf(this.callout.container)
         this.scene.tweens.killTweensOf(this.callout.titleText)
         this.scene.tweens.killTweensOf(this.callout.bodyText)
@@ -728,7 +730,7 @@ export class RobotGrid {
             alpha: 1,
             scaleX: 1,
             scaleY: 1,
-            y: 332,
+            y: 90,
             duration: 160,
             ease: 'Back.easeOut',
         })
@@ -740,7 +742,7 @@ export class RobotGrid {
             this.scene.tweens.add({
                 targets: this.callout.container,
                 alpha: 0,
-                y: 320,
+                y: 80,
                 duration: 180,
                 ease: 'Sine.easeOut',
                 onComplete: () => {
@@ -994,17 +996,20 @@ export class RobotGrid {
                 nextTween: null,
             }
 
-            // Press/drag/release handling: support tap and drag-to-slide on touch devices
+            // Use the actual pointer coordinate to decide the selected cell.
+            // This avoids visual/click mismatch when several blank cells exist or the canvas is scaled.
             container.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-                // record start coordinate for drag detection
-                // use worldX/worldY when available (camera transforms) and fall back to pointer.x/y
                 const px = pointer.worldX ?? pointer.x
                 const py = pointer.worldY ?? pointer.y
+                const pointerPosition = this.getBoardPositionFromPoint(px, py)
+                const startPosition = pointerPosition ?? tileView.position
+
                 tileView._pressStart = { x: px, y: py }
+                tileView._pressPosition = { row: startPosition.row, col: startPosition.col }
                 this.pulseTileTap(tileView)
 
-                if (this.isTileMovable(tileView.position)) {
-                    this.showSlidePreview(tileView.position)
+                if (this.isTileMovable(startPosition)) {
+                    this.showSlidePreview(startPosition)
                 }
             })
 
@@ -1020,22 +1025,26 @@ export class RobotGrid {
                 const dx = start ? Math.abs(px - start.x) : 0
                 const dy = start ? Math.abs(py - start.y) : 0
                 const distance = dx + dy
-                const DRAG_THRESHOLD = 8 // pixels; tune if needed
+                const DRAG_THRESHOLD = 8
+                const releasePosition = this.getBoardPositionFromPoint(px, py)
+                const pressedPosition = tileView._pressPosition ?? tileView.position
+                const selectedPosition = releasePosition ?? pressedPosition
 
                 if (distance <= DRAG_THRESHOLD) {
-                    // Treat as tap
-                    this.tileSelectHandler({ row: tileView.position.row, col: tileView.position.col })
+                    this.tileSelectHandler({ row: selectedPosition.row, col: selectedPosition.col })
                     this.clearSlidePreview()
+                    tileView._pressStart = undefined
+                    tileView._pressPosition = undefined
                     return
                 }
 
-                // On drag, if tile is movable, perform slide. We call handler with the tile position
-                if (this.isTileMovable(tileView.position)) {
-                    this.tileSelectHandler({ row: tileView.position.row, col: tileView.position.col })
+                if (this.isTileMovable(pressedPosition)) {
+                    this.tileSelectHandler({ row: pressedPosition.row, col: pressedPosition.col })
                 }
 
                 this.clearSlidePreview()
                 tileView._pressStart = undefined
+                tileView._pressPosition = undefined
             })
 
             container.on('pointerover', () => {
@@ -1080,7 +1089,7 @@ export class RobotGrid {
         this.drawRoundedPanel(background, -280, -132, 560, 264, 36, 0x072a36, 0.96, 0xbef6ff, 3)
         const title = this.scene.add.text(0, -82, 'SESSION RESULT', {
             fontFamily: UI_FONT,
-            fontSize: '28px',
+            fontSize: '20px',
             color: '#c7fbff',
             fontStyle: 'bold',
         }).setOrigin(0.5)
@@ -1198,7 +1207,7 @@ export class RobotGrid {
     }
 
     createCallout(): CalloutView {
-        const container = this.scene.add.container(640, 332)
+        const container = this.scene.add.container(1010, 118)
         const background = this.scene.add.graphics()
         const titleText = this.scene.add.text(0, -12, '', {
             fontFamily: UI_FONT,
@@ -1643,7 +1652,7 @@ export class RobotGrid {
             message = 'HURRY'
             fillColor = 0xffd289
         } else if (this.latestTimeLeft <= GameConfig.TIME_WARNING_SECONDS) {
-            message = 'TIME PRESSURE'
+            message = 'TURN PRESSURE'
             fillColor = 0xffefad
         }
 
@@ -1853,6 +1862,26 @@ export class RobotGrid {
         }
 
         return Direction.Left
+    }
+
+    getBoardPositionFromPoint(x: number, y: number): Position | null {
+        const col = Math.floor((x - GameConfig.BOARD_ORIGIN_X) / GameConfig.TILE_SIZE)
+        const row = Math.floor((y - GameConfig.BOARD_ORIGIN_Y) / GameConfig.TILE_SIZE)
+
+        if (
+            row < 0
+            || row >= this.latestSnapshot.boardSize
+            || col < 0
+            || col >= this.latestSnapshot.boardSize
+        ) {
+            return null
+        }
+
+        if (this.latestSnapshot.tileIds[row][col] === 0) {
+            return null
+        }
+
+        return { row, col }
     }
 
     /**

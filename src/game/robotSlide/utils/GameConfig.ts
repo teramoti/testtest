@@ -4,6 +4,8 @@ export class GameConfig {
     static GAME_WIDTH = 1280
     static GAME_HEIGHT = 720
     static SESSION_SECONDS = 60
+    static TURN_LIMIT = 30
+    static MISS_LIMIT = 5
     static BOARD_SIZE = 6
     static BLANK_COUNT = 2
     static TILE_SIZE = 60

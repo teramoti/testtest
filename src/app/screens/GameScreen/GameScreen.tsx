@@ -3,7 +3,6 @@ import './GameScreen.css'
 
 import { startGame, destroyGame } from '../../../game/GameManager'
 import type { GameResult, GameSettings } from '../../App'
-import { getGameTimeLimitSeconds } from '../../data/gameRules'
 import gameBgm from '../../../../assets/bkue_ghost/audio/game_bgm.mp3'
 import scoreDigit0Image from '../../../../assets/Image/score/digit_0.png'
 import scoreDigit1Image from '../../../../assets/Image/score/digit_1.png'
@@ -83,12 +82,6 @@ const timeDigitImages: Record<string, string> = {
   ':': timeDigitColonImage,
 }
 
-function formatTimer(value: number) {
-  const seconds = Math.max(0, Math.floor(value))
-  const minutes = Math.floor(seconds / 60)
-  const rest = seconds % 60
-  return `${minutes.toString().padStart(2, '0')}:${rest.toString().padStart(2, '0')}`
-}
 
 function formatScore(value: number | null) {
   return Math.max(0, Math.floor(value ?? 0)).toString()
@@ -132,7 +125,7 @@ export default function GameScreen({ settings, onFinish }: Props) {
     playerCount: settings.playerCount,
     scores: Array(settings.playerCount).fill(null),
     currentScore: null,
-    timeLeft: getGameTimeLimitSeconds(),
+    timeLeft: 60,
     ruleName: 'Wind-Up Route Rush',
     jewelCount: 0,
     missCount: 0,
@@ -213,7 +206,7 @@ export default function GameScreen({ settings, onFinish }: Props) {
           <div className="hudMainRow">
             <span className="compactHudLabel">TIME</span>
             <DigitSpriteText
-              value={formatTimer(hud.timeLeft)}
+              value={`${Math.max(0, Math.floor(hud.timeLeft ?? 0)).toString().padStart(2, '0')}`}
               digitImages={timeDigitImages}
               className="compactHudDigits compactHudTimeDigits"
             />
@@ -255,7 +248,8 @@ export default function GameScreen({ settings, onFinish }: Props) {
 
         <div className="guideRibbon">
           <strong>SLIDE PATH</strong>
-          <span>Connect the glowing route before the robot hits a dead end.</span>
+          <span>光る線=ルート / 黄色い輪=次の候補 / 宝石=得点</span>
+          <small>同じ行・列のタイルを空白へスライド</small>
         </div>
 
         <div

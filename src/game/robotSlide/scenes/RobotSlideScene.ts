@@ -160,19 +160,6 @@ export class RobotSlideScene extends Phaser.Scene {
         return 'normal'
     }
 
-    getLuckyAssistLimit(): number {
-        const difficulty = this.getDifficultyKey()
-
-        if (difficulty === 'easy') {
-            return 20
-        }
-
-        if (difficulty === 'hard') {
-            return 6
-        }
-
-        return 12
-    }
 
     getInitialRouteJewelCount(): number {
         const difficulty = this.getDifficultyKey()
@@ -466,7 +453,6 @@ export class RobotSlideScene extends Phaser.Scene {
                 this.getDifficultyKey() === 'hard' ? 2 : 3,
             )
             this.scoreManager.registerBonus('ROUTE CHAIN', routeChainReward, `+${routeChainReward} / ROUTE GEMS`)
-            this.robotGrid.showCallout('ROUTE CHAIN!', `+${routeChainReward} / ROUTE GEMS`, 0xa9f6ff, 720)
         }
 
         if (stepResult.triggeredCurrent) {
@@ -474,7 +460,7 @@ export class RobotSlideScene extends Phaser.Scene {
         }
 
         if (stepResult.collectedJewel) {
-            const scoreSnapshot = this.scoreManager.registerJewelCollect(
+            this.scoreManager.registerJewelCollect(
                 afterSnapshot.routePreview,
                 stepResult.collectedJewelValue,
             )
@@ -486,13 +472,6 @@ export class RobotSlideScene extends Phaser.Scene {
 
             if (stepResult.collectedJewelValue >= 5) {
                 this.cameras.main.flash(220, 238, 160, 255, false)
-            } else if (scoreSnapshot.jewelCount > 0 && scoreSnapshot.jewelCount % 3 === 0) {
-                this.robotGrid.showCallout(
-                    'STONE STREAK!',
-                    `${scoreSnapshot.jewelCount} COLLECTED`,
-                    0xffd48f,
-                    760,
-                )
             }
 
             this.handleJewelEffect(stepResult.collectedJewelValue, afterSnapshot)
@@ -522,7 +501,6 @@ export class RobotSlideScene extends Phaser.Scene {
             this.failMission('MISSION FAILED', 'NO MISS BROKEN')
         }
 
-        this.timeLeft = Math.max(1, this.timeLeft - GameConfig.CRASH_TIME_PENALTY_SECONDS)
         this.applyBattleSnapshot(this.battleManager.registerCrash(this.timeLeft))
         this.robotGrid.setInteractionEnabled(false)
         this.robotGrid.showRouteClosure(from, blockedPosition, direction)
@@ -612,7 +590,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.scoreManager.registerBonus('MISSION CLEAR', this.missionReward, `+${this.missionReward} / ROUTE GEMS`)
         this.boardManager.ensureRouteJewels(this.getDifficultyKey() === 'hard' ? 3 : 5, this.getDifficultyKey() === 'hard' ? 2 : 3)
         this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
-        this.robotGrid.showCallout('MISSION CLEAR!', `+${this.missionReward} / ROUTE GEMS`, 0xffe38f, 980)
+        this.robotGrid.showCallout('MISSION CLEAR!', `+${this.missionReward}`, 0xffe38f, 620)
         this.audioDirector.playSpecial()
         this.startMission()
         this.emitHud()
@@ -669,11 +647,7 @@ export class RobotSlideScene extends Phaser.Scene {
         if (jewelValue >= 5) {
                     this.boardManager.upgradeRouteJewels(this.getDifficultyKey() === 'hard' ? 3 : 5, 5)
             this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
-            this.robotGrid.showCallout('POWER GEM!', 'ROUTE POWER UP', 0xf1a8ff, 900)
             this.audioDirector.playSpecial()
-        } else if (jewelValue >= 3) {
-            this.timeLeft = Math.min(GameConfig.SESSION_SECONDS, this.timeLeft + 2)
-            this.robotGrid.showCallout('TIME GEM!', '+2 SEC', 0x9ed8ff, 760)
         }
 
         if (this.missionCount >= this.missionTarget) {
@@ -686,7 +660,7 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     handleFeverCheck(): void {
-        if (this.feverTriggered || this.timeLeft > 10) {
+        if (this.feverTriggered || this.timeLeft > 6) {
             return
         }
 
@@ -695,7 +669,7 @@ export class RobotSlideScene extends Phaser.Scene {
         this.boardManager.ensureRouteJewels(this.getDifficultyKey() === 'hard' ? 5 : 8, 5)
         this.scoreManager.registerBonus('FINAL FEVER', 5, '+5 / ROUTE POWER')
         this.robotGrid.sync(this.boardManager.getSnapshot(), this.timeLeft)
-        this.robotGrid.showCallout('FINAL FEVER!', 'ROUTE POWER', 0xffd48f, 1040)
+        this.robotGrid.showCallout('FINAL FEVER!', 'ROUTE POWER', 0xffd48f, 720)
         this.cameras.main.flash(260, 255, 218, 130, false)
         this.audioDirector.playSpecial()
         this.emitHud()
@@ -724,22 +698,108 @@ export class RobotSlideScene extends Phaser.Scene {
     }
 
     tickClock(): void {
-        if (this.sessionEnded || !this.roundLive) {
+        if (this.sessionEnded || this.retryPending || !this.roundLive) {
             return
         }
 
-        this.timeLeft -= 1
-        const snapshot = this.boardManager.getSnapshot()
-        this.applyBattleSnapshot(this.battleManager.advanceClock(this.timeLeft, this.scoreManager.getSnapshot()))
-        this.robotGrid.sync(snapshot, this.timeLeft)
-        this.handleMissionTick(snapshot)
+        this.timeLeft = Math.max(0, this.timeLeft - 1)
+        this.robotGrid.updateTimer(this.timeLeft)
+        this.applyBattleSnapshot(this.battleManager.syncPlayerScore(this.scoreManager.getSnapshot(), this.timeLeft))
+        this.updateMissionProgress(this.boardManager.getSnapshot())
         this.handleFeverCheck()
         this.emitHud()
-        this.updateThreat(snapshot)
 
         if (this.timeLeft <= 0) {
             this.endSession()
         }
+    }
+
+    beginRoundIntro(): void {
+        this.robotGrid.showCallout('ROUND START', 'COLLECT JEWELS', 0x8fe5eb, 640)
+        this.time.delayedCall(760, () => {
+            if (this.sessionEnded) {
+                return
+            }
+
+            this.robotGrid.showCallout('DIVE', 'READ AHEAD', 0xf6e0a8, 520)
+        })
+        this.time.delayedCall(1320, () => {
+            if (this.sessionEnded) {
+                return
+            }
+
+            this.roundLive = true
+            this.robotGrid.setInteractionEnabled(true)
+
+            const firstMove = this.boardManager.getBestAssistMove()
+            if (firstMove !== null) {
+                this.robotGrid.showAssistHint(firstMove, 'FIRST MOVE')
+                this.robotGrid.showCallout('FIRST MOVE', 'MARKED', 0xffe281, 520)
+            }
+
+            this.startClockTimer()
+            this.startRobotTimer()
+            this.updateThreat(this.boardManager.getSnapshot())
+        })
+    }
+
+    endSession(): void {
+        if (this.sessionEnded || this.finishSubmitted) {
+            return
+        }
+
+        this.sessionEnded = true
+        this.roundLive = false
+        this.busy = false
+        this.queuedTilePositions = []
+        this.finishSubmitted = true
+
+        this.timerEvent?.remove()
+        this.timerEvent = null
+        this.robotEvent?.remove()
+        this.robotEvent = null
+        this.jewelExpireEvent?.remove()
+        this.jewelExpireEvent = null
+
+        const snapshot = this.scoreManager.getSnapshot()
+        const battleSnapshot = this.battleManager.syncPlayerScore(snapshot, this.timeLeft)
+        this.latestBattleSnapshot = battleSnapshot
+        this.robotGrid.setInteractionEnabled(false)
+        this.robotGrid.showResult(snapshot, battleSnapshot)
+        this.emitHud(snapshot.score)
+
+        const playerCount = this.getPlayerCount()
+        const currentPlayerIndex = this.getCurrentPlayerIndex()
+        const playerStats = this.options.playerStats !== undefined
+            ? [...this.options.playerStats]
+            : Array.from({ length: playerCount }, () => ({ score: 0, missCount: 0, travelCount: 0 }))
+
+        playerStats[currentPlayerIndex] = {
+            score: snapshot.score,
+            missCount: snapshot.crashCount,
+            travelCount: snapshot.travelCount,
+        }
+
+        if (currentPlayerIndex + 1 < playerCount) {
+            this.options.currentPlayerIndex = currentPlayerIndex + 1
+            this.options.playerStats = playerStats
+            this.robotGrid.showCallout(`NEXT PLAYER ${currentPlayerIndex + 2}`, 'GET READY', 0xffe281, 1300)
+            this.time.delayedCall(1800, () => {
+                this.scene.restart(this.options)
+            })
+            return
+        }
+
+        this.time.delayedCall(900, () => {
+            this.onFinish?.({
+                results: playerStats.map((stats, index) => ({
+                    player: index + 1,
+                    score: stats.score,
+                    missCount: stats.missCount,
+                    travelCount: stats.travelCount,
+                })),
+            })
+        })
     }
 
     refreshRobotSpeed(nextSpeedLevel: number): void {
@@ -775,44 +835,47 @@ export class RobotSlideScene extends Phaser.Scene {
         )
     }
 
-    endSession(): void {
-        if (this.sessionEnded) {
-            return
+    getDangerLevel(riskLevel: RouteRiskLevel, timeLeft: number, battleSnapshot: BattleSnapshot | null): number {
+        const routeLevel = riskLevel === 'critical'
+            ? 3
+            : riskLevel === 'danger'
+                ? 2
+                : riskLevel === 'warning'
+                    ? 1
+                    : 0
+        const timeLevel = timeLeft <= GameConfig.TIME_DANGER_SECONDS
+            ? 3
+            : timeLeft <= GameConfig.TIME_WARNING_SECONDS
+                ? 1
+                : 0
+        const battleLevel = battleSnapshot !== null && battleSnapshot.state === 'behind'
+            ? timeLeft <= 12
+                ? 2
+                : timeLeft <= 22
+                    ? 1
+                    : 0
+            : 0
+
+        return Math.max(routeLevel, timeLevel, battleLevel)
+    }
+
+    updateThreat(snapshot: BoardSnapshot): void {
+        const dangerLevel = this.getDangerLevel(snapshot.routePreview.riskLevel, this.timeLeft, this.latestBattleSnapshot)
+        this.audioDirector.setAmbience(dangerLevel)
+
+        if (dangerLevel >= 2) {
+            this.audioDirector.playWarning()
         }
+    }
 
-        this.sessionEnded = true
-        this.roundLive = false
-        this.busy = false
-        this.retryPending = false
-        this.boosting = false
-        this.queuedTilePositions = []
-        this.robotGrid.hideRetryNotice()
-        this.robotGrid.setInteractionEnabled(false)
-        this.robotGrid.setBoostActive(false)
-        this.audioDirector.setAmbience(0)
+    isRouteImproved(beforeSnapshot: BoardSnapshot, afterSnapshot: BoardSnapshot): boolean {
+        return afterSnapshot.routePreview.safeStepCount > beforeSnapshot.routePreview.safeStepCount
+            || (!this.isDangerRisk(afterSnapshot.routePreview.riskLevel) && this.isDangerRisk(beforeSnapshot.routePreview.riskLevel))
+            || (!beforeSnapshot.routePreview.loopDetected && afterSnapshot.routePreview.loopDetected)
+    }
 
-        if (this.timerEvent !== null) {
-            this.timerEvent.remove()
-            this.timerEvent = null
-        }
-
-        if (this.robotEvent !== null) {
-            this.robotEvent.remove()
-            this.robotEvent = null
-        }
-
-        if (this.retryEvent !== null) {
-            this.retryEvent.remove()
-            this.retryEvent = null
-        }
-
-        this.applyBattleSnapshot(this.battleManager.syncPlayerScore(this.scoreManager.getSnapshot(), this.timeLeft), true)
-
-        if (this.latestBattleSnapshot !== null) {
-            this.robotGrid.showResult(this.scoreManager.getSnapshot(), this.latestBattleSnapshot)
-        }
-
-        this.submitResult()
+    isDangerRisk(riskLevel: RouteRiskLevel): boolean {
+        return riskLevel === 'danger' || riskLevel === 'critical'
     }
 
     emitHud(score: number = this.scoreManager.getSnapshot().score): void {
@@ -862,134 +925,6 @@ export class RobotSlideScene extends Phaser.Scene {
 
     getCurrentPlayerIndex(): number {
         return Math.max(0, Math.min(this.getPlayerCount() - 1, Math.trunc(this.options.currentPlayerIndex ?? 0)))
-    }
-
-    submitResult(): void {
-        if (this.finishSubmitted) {
-            return
-        }
-
-        this.finishSubmitted = true
-        const snapshot = this.scoreManager.getSnapshot()
-        const score = snapshot.score
-        const playerCount = this.getPlayerCount()
-        const currentPlayerIndex = this.getCurrentPlayerIndex()
-        const scores = Array.from({ length: playerCount }, (_, index) => this.options.scores?.[index] ?? 0)
-        const playerStats = Array.from({ length: playerCount }, (_, index) => this.options.playerStats?.[index] ?? {
-            score: this.options.scores?.[index] ?? 0,
-            missCount: 0,
-            travelCount: 0,
-        })
-        scores[currentPlayerIndex] = score
-        playerStats[currentPlayerIndex] = {
-            score,
-            missCount: snapshot.crashCount,
-            travelCount: snapshot.travelCount,
-        }
-        this.options.scores = scores
-        this.options.playerStats = playerStats
-        this.emitHud(score)
-
-        if (currentPlayerIndex + 1 < playerCount) {
-            this.options.currentPlayerIndex = currentPlayerIndex + 1
-            this.robotGrid.showCallout(
-                `NEXT PLAYER ${currentPlayerIndex + 2}`,
-                'GET READY',
-                0xffe281,
-                1600,
-            )
-            this.time.delayedCall(2600, () => {
-                this.scene.restart(this.options)
-            })
-            return
-        }
-
-        this.robotGrid.showCallout('GAME SET!', 'RESULT', 0xffe281, 900)
-        this.time.delayedCall(900, () => {
-            this.onFinish?.({
-                results: playerStats.map((stats, index) => ({
-                    player: index + 1,
-                    score: stats.score,
-                    missCount: stats.missCount,
-                    travelCount: stats.travelCount,
-                })),
-            })
-        })
-    }
-
-    updateThreat(snapshot: BoardSnapshot): void {
-        const dangerLevel = this.getDangerLevel(snapshot.routePreview.riskLevel, this.timeLeft, this.latestBattleSnapshot)
-        this.audioDirector.setAmbience(dangerLevel)
-
-        if (dangerLevel >= 2) {
-            this.audioDirector.playWarning()
-        }
-    }
-
-    getDangerLevel(riskLevel: RouteRiskLevel, timeLeft: number, battleSnapshot: BattleSnapshot | null): number {
-        const routeLevel = riskLevel === 'critical'
-            ? 3
-            : riskLevel === 'danger'
-                ? 2
-                : riskLevel === 'warning'
-                    ? 1
-                    : 0
-        const timeLevel = timeLeft <= GameConfig.TIME_DANGER_SECONDS
-            ? 3
-            : timeLeft <= GameConfig.TIME_WARNING_SECONDS
-                ? 1
-                : 0
-        const battleLevel = battleSnapshot !== null && battleSnapshot.state === 'behind'
-            ? timeLeft <= 12
-                ? 2
-                : timeLeft <= 22
-                    ? 1
-                    : 0
-            : 0
-        return Math.max(routeLevel, timeLevel, battleLevel)
-    }
-
-    isRouteImproved(beforeSnapshot: BoardSnapshot, afterSnapshot: BoardSnapshot): boolean {
-        return afterSnapshot.routePreview.safeStepCount > beforeSnapshot.routePreview.safeStepCount
-            || (!this.isDangerRisk(afterSnapshot.routePreview.riskLevel) && this.isDangerRisk(beforeSnapshot.routePreview.riskLevel))
-            || (!beforeSnapshot.routePreview.loopDetected && afterSnapshot.routePreview.loopDetected)
-    }
-
-    isDangerRisk(riskLevel: RouteRiskLevel): boolean {
-        return riskLevel === 'danger' || riskLevel === 'critical'
-    }
-
-    getSessionProgress(): number {
-        return 1 - this.timeLeft / GameConfig.SESSION_SECONDS
-    }
-
-    beginRoundIntro(): void {
-        this.robotGrid.showCallout('ROUND START', 'COLLECT JEWELS', 0x8fe5eb, 640)
-        this.time.delayedCall(760, () => {
-            if (this.sessionEnded) {
-                return
-            }
-
-            this.robotGrid.showCallout('DIVE', 'READ AHEAD', 0xf6e0a8, 520)
-        })
-        this.time.delayedCall(1320, () => {
-            if (this.sessionEnded) {
-                return
-            }
-
-            this.roundLive = true
-            this.robotGrid.setInteractionEnabled(true)
-
-            const firstMove = this.boardManager.getBestAssistMove()
-            if (firstMove !== null) {
-                this.robotGrid.showAssistHint(firstMove, 'FIRST MOVE')
-                this.robotGrid.showCallout('FIRST MOVE', 'MARKED ON BOARD', 0xffe281, 760)
-            }
-
-            this.startClockTimer()
-            this.startRobotTimer()
-            this.updateThreat(this.boardManager.getSnapshot())
-        })
     }
 
     applyBattleSnapshot(snapshot: BattleSnapshot, silent: boolean = false): void {

@@ -1237,31 +1237,19 @@ export class BoardManager {
     }
 
     findTargetBlank(position: Position): Position | null {
-        let bestBlank: Position | null = null
-        let bestDistance = Number.POSITIVE_INFINITY
+        const alignedBlanks = this.blankPositions
+            .map((blank) => ({
+                blank,
+                distance: Math.abs(position.row - blank.row) + Math.abs(position.col - blank.col),
+            }))
+            .filter(({ blank, distance }) => distance > 0 && (position.row === blank.row || position.col === blank.col))
+            .sort((a, b) => a.distance - b.distance)
 
-        for (const blank of this.blankPositions) {
-            if (position.row !== blank.row && position.col !== blank.col) {
-                continue
-            }
-
-            const distance = Math.abs(position.row - blank.row) + Math.abs(position.col - blank.col)
-
-            if (distance === 0 || distance >= bestDistance) {
-                continue
-            }
-
-            const pathPositions = this.getSlidePathPositionsToBlank(position, blank)
-
-            if (pathPositions === null || pathPositions.length === 0) {
-                continue
-            }
-
-            bestBlank = blank
-            bestDistance = distance
+        if (alignedBlanks.length === 0) {
+            return null
         }
 
-        return bestBlank === null ? null : this.clonePosition(bestBlank)
+        return this.clonePosition(alignedBlanks[0].blank)
     }
 
     getSlideDirectionToBlank(position: Position, blank: Position): DirectionValue | null {
@@ -1300,6 +1288,10 @@ export class BoardManager {
         let cursor = this.clonePosition(position)
 
         while (!this.samePosition(cursor, blank)) {
+            if (!this.isInsideBoard(cursor)) {
+                return null
+            }
+
             positions.push(this.clonePosition(cursor))
             cursor = {
                 row: cursor.row + delta.row,

@@ -396,3 +396,13 @@
 }
 
 
+
+/* v26: clearer in-game minimal guide */
+.guideRibbon small {
+  display: block;
+  margin-top: 2px;
+  color: #fff1b8;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}

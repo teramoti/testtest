@@ -63,9 +63,9 @@ export const GAME_DIFFICULTY_TUNING = {
 } as const
 
 export const difficultyDescriptions: Record<GameDifficulty, string> = {
-  easy: '4×4の小さめ盤面です。救済ボタンなしでも初見が遊べる低速設定です。',
-  normal: '6×6の標準盤面です。60秒で道づくりと宝石回収を両立する提出用の標準難度です。',
-  hard: '8×8の広い盤面です。ロボットが速く、先読みと連続スライドが必要です。',
+  easy: '4×4の小さめ盤面です。ターン制で、初見でも操作を確認しながら遊べる低速設定です。',
+  normal: '6×6の標準盤面です。TURN内で道づくりと宝石回収を両立する提出用の標準難度です。',
+  hard: '8×8の広い盤面です。ロボットが速く、少ないTURNで先読みと連続スライドが必要です。',
 }
 
 export function getGameTimeLimitSeconds() {
